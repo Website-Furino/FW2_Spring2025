@@ -1,10 +1,6 @@
 import LayoutWebsite from "./page/(website)/layout";
 import LayoutAdmin from "./page/(admin)/LayoutAdmin";
 import NotFoundPage from "./page/(website)/404/page";
-import CategoryList from "./page/(admin)/Categories/CategoryList";
-import CategoryAdd from "./page/(admin)/Categories/CategoryAdd";
-import CategoryEdit from "./page/(admin)/Categories/CategoryEdit";
-import UserList from "./page/(admin)/Users/UserList";
 import Login from "./page/(website)/login/Login";
 import Register from "./page/(website)/register/Register";
 import ThankYouPage from "./page/(website)/checkout/thankyou";
@@ -87,18 +83,18 @@ function App() {
           path: "products/:id/edit",
           element: <ProductEdit />,
         },
-        {
-          path: "categories",
-          element: <CategoryList />,
-        },
-        {
-          path: "categories/add",
-          element: <CategoryAdd />,
-        },
-        {
-          path: "categories/:id/edit",
-          element: <CategoryEdit />,
-        },
+        // {
+        //   path: "categories",
+        //   element: <CategoryList />,
+        // },
+        // {
+        //   path: "categories/add",
+        //   element: <CategoryAdd />,
+        // },
+        // {
+        //   path: "categories/:id/edit",
+        //   element: <CategoryEdit />,
+        // },
         {
           path: "orders",
           element: <Orders />,
@@ -107,10 +103,10 @@ function App() {
           path: "orders/:id",
           element: <OrderDetail />,
         },
-        {
-          path: "users",
-          element: <UserList />,
-        },
+        // {
+        //   path: "users",
+        //   element: <UserList />,
+        // },
       ],
     },
     { path: "*", element: <NotFoundPage /> },
