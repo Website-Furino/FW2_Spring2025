@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.text-ellipsis {
+  white-space: nowrap; /* Không cho phép xuống dòng */
+  overflow: hidden; /* Ẩn phần vượt quá khung */
+  text-overflow: ellipsis; /* Thêm dấu ba chấm (...) cho phần bị ẩn */
+  max-width: 200px;
+}
