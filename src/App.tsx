@@ -19,6 +19,9 @@ import ProductList from "./page/(admin)/Products/ProductList";
 import ProductAdd from "./page/(admin)/Products/ProductAdd";
 import ProductEdit from "./page/(admin)/Products/ProductEdit";
 import UserList from "./page/(admin)/Users/UserList";
+import CategoryList from "./page/(admin)/Categories/CategoryList";
+import CategoryAdd from "./page/(admin)/Categories/CategoryAdd";
+import CategoryEdit from "./page/(admin)/Categories/CategoryEdit";
 
 function App() {
   const routerConfig = createBrowserRouter([
@@ -84,18 +87,18 @@ function App() {
           path: "products/:id/edit",
           element: <ProductEdit />,
         },
-        // {
-        //   path: "categories",
-        //   element: <CategoryList />,
-        // },
-        // {
-        //   path: "categories/add",
-        //   element: <CategoryAdd />,
-        // },
-        // {
-        //   path: "categories/:id/edit",
-        //   element: <CategoryEdit />,
-        // },
+        {
+          path: "categories",
+          element: <CategoryList />,
+        },
+        {
+          path: "categories/add",
+          element: <CategoryAdd />,
+        },
+        {
+          path: "categories/:id/edit",
+          element: <CategoryEdit />,
+        },
         {
           path: "orders",
           element: <Orders />,
