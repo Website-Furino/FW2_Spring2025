@@ -18,6 +18,7 @@ import Dashboard from "./page/(admin)/Dashboard";
 import ProductList from "./page/(admin)/Products/ProductList";
 import ProductAdd from "./page/(admin)/Products/ProductAdd";
 import ProductEdit from "./page/(admin)/Products/ProductEdit";
+import UserList from "./page/(admin)/Users/UserList";
 
 function App() {
   const routerConfig = createBrowserRouter([
@@ -103,10 +104,10 @@ function App() {
           path: "orders/:id",
           element: <OrderDetail />,
         },
-        // {
-        //   path: "users",
-        //   element: <UserList />,
-        // },
+        {
+          path: "users",
+          element: <UserList />,
+        },
       ],
     },
     { path: "*", element: <NotFoundPage /> },
