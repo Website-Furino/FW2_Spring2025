@@ -103,10 +103,10 @@ function App() {
           path: "orders/:id",
           element: <OrderDetail />,
         },
-        // {
-        //   path: "users",
-        //   element: <UserList />,
-        // },
+        {
+          path: "users",
+          element: <UserList />,
+        },
       ],
     },
     { path: "*", element: <NotFoundPage /> },
