@@ -8,13 +8,6 @@ type Props = {
   id?: number | string;
   values?: any;
 };
-// interface AuthResponse {
-//   accessToken: string;
-//   user: {
-//     id: string;
-//     // Các thông tin người dùng khác nếu có
-//   };
-// }
 export const useList = ({ resource = "products" }) => {
   return useQuery({
     queryKey: [resource],
@@ -67,24 +60,20 @@ export const useDelete = ({ resource = "products" }: Props) => {
     },
   });
 };
-// export const useAuth = ({ resource = "register" }) => {
-//   return useMutation<AuthResponse, Error, any>({
-//     mutationFn: (values) => auth({ resource, values }), // Gửi yêu cầu đến API với các tham số.
-//     onSuccess: (response) => {
-//       // Kiểm tra xem API có trả về accessToken không
-//       const accessToken = response?.accessToken;
-
-//       if (accessToken) {
-//         // Lưu accessToken vào localStorage để sử dụng sau này
-//         localStorage.setItem("accessToken", accessToken);
-
-//         message.success("Thành công!");
-//       } else {
-//         message.error("Không tìm thấy accessToken trong phản hồi.");
-//       }
-//     },
-//     onError: (error) => {
-//       message.error(error?.message || "Đã xảy ra lỗi!");
-//     },
-//   });
-// };
+export const useAuth = ({ resource = "register" }) => {
+  const nav = useNavigate();
+  return useMutation({
+    mutationFn: (values) => auth({ resource, values }),
+    onSuccess: (data) => {
+      if (resource == "register") {
+        nav("/login");
+        return;
+      }
+      console.log(data);
+      message.success("Thành công");
+      localStorage.setItem("token", data.accessToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      nav("/");
+    },
+  });
+};

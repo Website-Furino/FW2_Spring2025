@@ -12,87 +12,101 @@ const CartPage = () => {
 
   useEffect(() => {
     // Kiểm tra xem người dùng đã đăng nhập chưa
-    const user = localStorage.getItem("userId");
-    if (user) {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.id) {
       setIsLoggedIn(true);
-    }
 
-    axios
-      .get("http://localhost:3000/carts")
-      .then((response) => {
-        const cartData = response.data;
-        // Xử lý giỏ hàng, cộng dồn số lượng nếu sản phẩm trùng tên
-        const updatedCart = mergeDuplicateItems(cartData);
-        setCart(updatedCart);
-        calculateTotal(updatedCart);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy giỏ hàng: ", error);
-      });
+      // Lấy giỏ hàng của người dùng từ JSON Server
+      axios
+        .get(`http://localhost:3000/carts?userId=${user.id}`) // Chỉ lấy giỏ hàng của người dùng đăng nhập
+        .then((response) => {
+          const cartData = response.data;
+          const updatedCart = mergeDuplicateItems(cartData);
+          setCart(updatedCart);
+          calculateTotal(updatedCart);
+        })
+        .catch((error) => {
+          console.error("Lỗi khi lấy giỏ hàng: ", error);
+        });
+    } else {
+      // Nếu người dùng chưa đăng nhập, kiểm tra giỏ hàng trong localStorage
+      const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCart(localCart);
+      calculateTotal(localCart);
+    }
   }, []);
 
   // Hàm xử lý sản phẩm trùng trong giỏ hàng, cộng dồn số lượng
   const mergeDuplicateItems = (cartData: any[]) => {
     const cartMap: any = {};
 
-    // Duyệt qua tất cả sản phẩm trong giỏ hàng
     cartData.forEach((item) => {
-      // Kiểm tra sản phẩm đã có trong giỏ hàng chưa, so sánh theo tên sản phẩm
       const existingProduct = Object.values(cartMap).find(
         (cartItem: any) => cartItem.name === item.name
       );
 
       if (existingProduct) {
-        // Nếu sản phẩm trùng, cộng dồn số lượng
         existingProduct.quantity += item.quantity;
-        existingProduct.totalPrice =
-          existingProduct.price * existingProduct.quantity; // Cập nhật lại tổng
+        existingProduct.totalPrice = existingProduct.price * existingProduct.quantity;
       } else {
-        // Nếu sản phẩm chưa có, thêm mới vào giỏ hàng
         cartMap[item.id] = { ...item, totalPrice: item.price * item.quantity };
       }
     });
 
-    // Chuyển từ cartMap về mảng
     return Object.values(cartMap);
   };
 
+  // Hàm xử lý xóa sản phẩm khỏi giỏ hàng
   const handleRemoveItem = (productId: number) => {
-    // Xóa tất cả các sản phẩm có cùng productId trong giỏ hàng
-    const updatedCart = cart.filter((item) => item.id !== productId);
-
-    axios
-      .delete(`http://localhost:3000/carts/${productId}`)
-      .then((response) => {
-        setCart(updatedCart);
-        message.success("Xóa sản phẩm thành công");
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-        calculateTotal(updatedCart); // Tính lại tổng giá trị giỏ hàng
-      })
-      .catch((error) => {
-        console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng: ", error);
-      });
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.id) {
+      axios
+        .delete(`http://localhost:3000/carts/${productId}`)
+        .then(() => {
+          setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+          message.success("Xóa sản phẩm thành công");
+          calculateTotal(cart.filter((item) => item.id !== productId));
+        })
+        .catch((error) => {
+          console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng: ", error);
+        });
+    } else {
+      // Nếu người dùng không đăng nhập, xóa sản phẩm khỏi localStorage
+      const updatedCart = cart.filter((item) => item.id !== productId);
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      setCart(updatedCart);
+      calculateTotal(updatedCart);
+    }
   };
 
+  // Hàm thay đổi số lượng sản phẩm
   const handleChangeQuantity = (index: number, quantity: number) => {
     const updatedCart = [...cart];
     updatedCart[index].quantity = quantity;
-    updatedCart[index].totalPrice = updatedCart[index].price * quantity; // Cập nhật lại tổng giá trị sản phẩm
+    updatedCart[index].totalPrice = updatedCart[index].price * quantity;
 
-    axios
-      .put(
-        `http://localhost:3000/carts/${updatedCart[index].id}`,
-        updatedCart[index]
-      )
-      .then((response) => {
-        setCart(updatedCart);
-        calculateTotal(updatedCart);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi thay đổi số lượng: ", error);
-      });
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (user.id) {
+      // Cập nhật giỏ hàng trên server nếu người dùng đã đăng nhập
+      axios
+        .put(`http://localhost:3000/carts/${updatedCart[index].id}`, updatedCart[index])
+        .then(() => {
+          setCart(updatedCart);
+          calculateTotal(updatedCart);
+        })
+        .catch((error) => {
+          console.error("Lỗi khi thay đổi số lượng: ", error);
+        });
+    } else {
+      // Cập nhật giỏ hàng trong localStorage nếu người dùng chưa đăng nhập
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      setCart(updatedCart);
+      calculateTotal(updatedCart);
+    }
   };
 
+  // Hàm xử lý thanh toán
   const handleCheckout = () => {
     if (!isLoggedIn) {
       notification.error({
@@ -101,15 +115,15 @@ const CartPage = () => {
       });
       nav("/login");
     } else {
-      console.log("Proceeding to checkout...");
-      nav("checkout");
+      nav("/checkout");
     }
   };
 
+  // Hàm tính tổng giỏ hàng
   const calculateTotal = (cartData: any[]) => {
     let totalPrice = 0;
     cartData.forEach((item) => {
-      totalPrice += item.totalPrice; // Cộng dồn tổng của tất cả sản phẩm trong giỏ
+      totalPrice += item.totalPrice;
     });
     setTotal(totalPrice);
   };
@@ -117,21 +131,17 @@ const CartPage = () => {
   return (
     <div className="w-[1280px] mx-auto flex mt-12 mb-16">
       {cart.length === 0 ? (
-        // Giỏ hàng trống
         <div className="flex flex-col items-center justify-center w-full h-[400px]">
           <h2 className="text-2xl font-semibold">Giỏ hàng trống</h2>
-          <p className="text-gray-500">
-            Hiện tại giỏ hàng của bạn chưa có sản phẩm nào.
-          </p>
+          <p className="text-gray-500">Hiện tại giỏ hàng của bạn chưa có sản phẩm nào.</p>
           <button
-            onClick={() => nav("/shop")} // Chuyển đến trang sản phẩm hoặc trang chủ
+            onClick={() => nav("/shop")}
             className="mt-4 px-6 py-2 bg-[#B88E2F] text-white rounded-lg"
           >
             Mua sắm ngay
           </button>
         </div>
       ) : (
-        // Giỏ hàng có sản phẩm
         <div className="w-[817px]">
           <table className="w-full text-[#262626] text-base font-medium font-poppins table-auto">
             <thead className="bg-[#F9F1E7] text-left">
@@ -172,7 +182,7 @@ const CartPage = () => {
                   <td>
                     <AiFillDelete
                       className="text-2xl text-[#B88E2F] cursor-pointer hover:text-[#e0ae3a]"
-                      onClick={() => handleRemoveItem(item.id)} // Xóa tất cả sản phẩm có id giống
+                      onClick={() => handleRemoveItem(item.id)}
                     />
                   </td>
                 </tr>

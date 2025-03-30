@@ -5,16 +5,16 @@ import {
   LogoutOutlined,
   HistoryOutlined,
 } from "@ant-design/icons";
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Menu, message } from "antd";
 
 const Header = () => {
-  const userEmail = localStorage.getItem("userEmail"); // Lấy email người dùng từ localStorage
-  const nav = useNavigate()
+  const user = JSON.parse(localStorage.getItem("user") || "{}"); // Lấy email người dùng từ localStorage
+  const nav = useNavigate();
   // Hàm đăng xuất
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
+    message.success("Đăng xuất thành công");
     nav("/login"); // Điều hướng về trang đăng nhập
   };
 
@@ -23,7 +23,7 @@ const Header = () => {
     <Menu>
       {/* Hiển thị email trong dropdown */}
       <Menu.Item key="0" disabled>
-        <span className="text-lg">{userEmail}</span> {/* Hiển thị email */}
+        <span className="text-lg">{user.fullName}</span>
       </Menu.Item>
       <Menu.Item
         key="1"
@@ -107,7 +107,7 @@ const Header = () => {
               {/* User Account */}
               <div className="relative group">
                 <Dropdown
-                  overlay={userEmail ? userMenu : guestMenu}
+                  overlay={user.fullName ? userMenu : guestMenu}
                   trigger={["click"]}
                 >
                   <button className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600">
@@ -118,7 +118,7 @@ const Header = () => {
                       className="h-7 w-7"
                     />
                     {/* Nếu đã đăng nhập, hiển thị email trong dropdown khi click vào icon */}
-                    {/* {!userEmail && (
+                    {/* {!user && (
                       <span className="ml-2 text-sm text-gray-600">Account</span>
                     )} */}
                   </button>

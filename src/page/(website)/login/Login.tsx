@@ -1,43 +1,12 @@
 import { useState } from "react";
-import { Button, Form, Input, message, Card } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Button, Form, Input, Card } from "antd";
+import { useAuth } from "../../../hooks";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const onFinish = async (values: { email: string; password: string }) => {
-    setLoading(true);
-    try {
-      // Giả sử gọi API login để lấy accessToken và thông tin người dùng
-      const response = await fetch("http://localhost:3000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      const data = await response.json();
-
-      if (data?.accessToken && data?.user) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("userId", data.user.id.toString());
-        localStorage.setItem("userEmail", data.user.email); // Lưu email người dùng
-
-        message.success("Đăng nhập thành công");
-        navigate("/");
-      } else {
-        message.error("Đăng nhập thất bại!");
-      }
-    } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      message.error("Đã xảy ra lỗi!");
-    } finally {
-      setLoading(false);
-    }
+  const { mutate } = useAuth({ resource: "login" });
+  const onFinish = (values: any) => {
+    mutate(values);
   };
-
   return (
     <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
       <Card style={{ width: 400, padding: 20 }}>
@@ -60,7 +29,7 @@ const Login = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}>
+            <Button type="primary" htmlType="submit" block>
               Đăng nhập
             </Button>
           </Form.Item>
