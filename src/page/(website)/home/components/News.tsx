@@ -30,28 +30,52 @@ const NewsHome = () => {
   // Hàm thêm sản phẩm vào giỏ hàng
   const addToCart = async (product: any) => {
     try {
-      // Lấy giỏ hàng hiện tại
-      const response = await axios.get("http://localhost:3000/carts");
-      const cart = response.data;
+      // Kiểm tra xem người dùng đã đăng nhập chưa
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      
+      if (user.id) {
+        // Người dùng đã đăng nhập, xử lý giỏ hàng trên server
+        const response = await axios.get("http://localhost:3000/carts");
+        const cart = response.data;
 
-      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-      const existingProduct = cart.find((item: any) => item.id === product.id);
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        const existingProduct = cart.find((item: any) => item.id === product.id);
 
-      if (existingProduct) {
-        // Nếu sản phẩm đã có, tăng số lượng lên 1
-        existingProduct.quantity += 1;
-        await axios.put(
-          `http://localhost:3000/carts/${existingProduct.id}`,
-          existingProduct
-        );
-        notification.success({
-          message: "Sản phẩm đã được cập nhật",
-          description: `Số lượng của ${product.name} đã được tăng lên.`,
-        });
+        if (existingProduct) {
+          // Nếu sản phẩm đã có, tăng số lượng lên 1
+          existingProduct.quantity += 1;
+          await axios.put(
+            `http://localhost:3000/carts/${existingProduct.id}`,
+            existingProduct
+          );
+          notification.success({
+            message: "Sản phẩm đã được cập nhật",
+            description: `Số lượng của ${product.name} đã được tăng lên.`,
+          });
+        } else {
+          // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
+          const newProduct = { ...product, quantity: 1, userId: user.id };
+          await axios.post("http://localhost:3000/carts", newProduct);
+          notification.success({
+            message: "Thêm vào giỏ hàng thành công",
+            description: `${product.name} đã được thêm vào giỏ hàng.`,
+          });
+        }
       } else {
-        // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
-        const newProduct = { ...product, quantity: 1 };
-        await axios.post("http://localhost:3000/carts", newProduct);
+        // Người dùng chưa đăng nhập, lưu giỏ hàng vào localStorage
+        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const existingProduct = localCart.find((item: any) => item.id === product.id);
+
+        if (existingProduct) {
+          // Nếu sản phẩm đã có, tăng số lượng lên 1
+          existingProduct.quantity += 1;
+        } else {
+          // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
+          localCart.push({ ...product, quantity: 1 });
+        }
+
+        // Lưu giỏ hàng vào localStorage
+        localStorage.setItem("cart", JSON.stringify(localCart));
         notification.success({
           message: "Thêm vào giỏ hàng thành công",
           description: `${product.name} đã được thêm vào giỏ hàng.`,
