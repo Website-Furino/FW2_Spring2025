@@ -2,20 +2,27 @@ import axios from "axios";
 
 axios.defaults.baseURL = "http://localhost:3000/";
 
+const token = localStorage.getItem("token");
+const axiosClient = axios.create({
+  baseURL: "http://localhost:3000/",
+  headers: {
+    Authorization: token && `Beaer ${token}`,
+  },
+});
+
 type ProviderProps = {
   resource: string;
   id?: number | string;
   values?: any;
 };
-
 export const getList = async ({ resource = "products" }) => {
-  const { data } = await axios.get(resource);
+  const { data } = await axiosClient.get(resource);
   return data;
 };
 
 export const getOne = async ({ resource = "products", id }: ProviderProps) => {
   if (!id) return;
-  const { data } = await axios.get(`${resource}/${id}`);
+  const { data } = await axiosClient.get(`${resource}/${id}`);
   return data;
 };
 
@@ -24,7 +31,7 @@ export const create = async ({
   resource = "products",
   values,
 }: ProviderProps) => {
-  const { data } = await axios.post(resource, values);
+  const { data } = await axiosClient.post(resource, values);
   return data;
 };
 
@@ -35,7 +42,7 @@ export const update = async ({
   values,
 }: ProviderProps) => {
   if (!id) return;
-  const { data } = await axios.put(`${resource}/${id}`, values);
+  const { data } = await axiosClient.put(`${resource}/${id}`, values);
   return data;
 };
 
@@ -45,23 +52,13 @@ export const deleteOne = async ({
   id,
 }: ProviderProps) => {
   if (!id) return;
-  const { data } = await axios.delete(`${resource}/${id}`);
+  const { data } = await axiosClient.delete(`${resource}/${id}`);
   return data;
 };
-// auth: register || login
-// export const auth = async ({ resource, values }: { resource: string; values: any }) => {
-//   const response = await fetch(`http://localhost:3000/${resource}`, {
-//     method: "POST",
-//     body: JSON.stringify(values),
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//   });
-
-//   if (!response.ok) {
-//     throw new Error("Đăng nhập thất bại!");
-//   }
-
-//   const data = await response.json(); // Dữ liệu trả về từ API
-//   return data; // Trả về dữ liệu chứa accessToken và userId
-// };
+export const auth = async ({
+  resource = "register",
+  values,
+}: ProviderProps) => {
+  const { data } = await axiosClient.post(resource, values);
+  return data;
+};
