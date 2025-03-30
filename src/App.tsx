@@ -46,7 +46,7 @@ function App() {
           element: <CartPage />,
         },
         {
-          path: "shop/cart/checkout",
+          path: "/checkout",
           element: <CheckoutPage />,
         },
         {

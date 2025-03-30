@@ -31,15 +31,31 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/carts")
-      .then((response) => {
-        setCartItems(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching cart items:", error);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (user && user.email) {
+      // Cập nhật thông tin người dùng từ localStorage
+      setUserInfo({
+        email: user.email,
+        fullName: user.fullName,
+        phone: user.phone,
+        address: user.address,
       });
-  }, []);
+
+      // Lấy giỏ hàng của người dùng từ API
+      axios
+        .get(`http://localhost:3000/carts?user=${user.user}`)
+        .then((response) => {
+          setCartItems(response.data); // Cập nhật giỏ hàng của người dùng
+        })
+        .catch((error) => {
+          console.error("Error fetching cart items:", error);
+        });
+    } else {
+      message.error("Không tìm thấy thông tin người dùng!");
+      navigate("/login"); // Chuyển hướng về trang đăng nhập nếu không có người dùng
+    }
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
