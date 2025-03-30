@@ -17,7 +17,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
@@ -28,13 +28,13 @@ const ProductDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1); // Số lượng mặc định là 1
   const { id } = useParams(); // Lấy ID sản phẩm từ URL
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Lấy dữ liệu sản phẩm
     axios
       .get(`http://localhost:3000/products/${id}`)
       .then((response) => {
-        // console.log("Product data:", response.data); // Kiểm tra thông tin sản phẩm
         setProduct(response.data);
         setLoading(false);
 
@@ -48,7 +48,6 @@ const ProductDetail = () => {
               )}`
             )
             .then((res) => {
-              // Lọc các sản phẩm khác ngoài sản phẩm hiện tại
               setRelatedProducts(
                 res.data.filter((p: any) => p.id !== response.data.id)
               );
@@ -67,8 +66,20 @@ const ProductDetail = () => {
       });
   }, [id]);
 
+  // Hàm xử lý thêm sản phẩm vào giỏ hàng
   const handleAddToCart = () => {
-    // Kiểm tra số lượng
+    // Kiểm tra nếu người dùng chưa đăng nhập
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.id) {
+      notification.error({
+        message: "Bạn cần đăng nhập để thêm vào giỏ hàng",
+        description: "Vui lòng đăng nhập để tiếp tục.",
+      });
+      navigate("/login");
+      return;
+    }
+
+    // Kiểm tra số lượng sản phẩm hợp lệ
     if (quantity < 1 || quantity > product.stock) {
       notification.error({
         message: "Số lượng không hợp lệ",
@@ -77,8 +88,9 @@ const ProductDetail = () => {
       return;
     }
 
-    // Tạo đối tượng sản phẩm trong giỏ hàng
+    // Tạo đối tượng giỏ hàng
     const cartItem = {
+      userId: user.id, // Thêm userId để gắn giỏ hàng với người dùng
       productId: product.id,
       name: product.name,
       price: product.price,
@@ -86,7 +98,7 @@ const ProductDetail = () => {
       imageUrl: product.imageUrl,
     };
 
-    // Gửi yêu cầu thêm vào giỏ hàng
+    // Gửi yêu cầu POST đến API giỏ hàng
     axios
       .post("http://localhost:3000/carts", cartItem)
       .then(() => {
@@ -233,22 +245,17 @@ const ProductDetail = () => {
           {relatedProducts.map((product) => (
             <SwiperSlide key={product.id}>
               <div className="bg-[#F4F5F7]">
-                {/* Box ảnh sản phẩm */}
                 <div className="relative group h-80 overflow-hidden">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover transition duration-300 group-hover:opacity-70"
                   />
-
-                  {/* Hiển thị sản phẩm nổi bật */}
                   {product.noibat && (
                     <span className="absolute top-4 left-4 bg-yellow-500 text-white font-medium px-2 py-1 rounded-full">
                       Nổi bật
                     </span>
                   )}
-
-                  {/* Các nút khi hover */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black bg-opacity-50">
                     <button
                       onClick={() => handleAddToCart(product)} // Gọi handleAddToCart khi bấm vào nút
@@ -271,8 +278,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Box thông tin sản phẩm */}
                 <div className="mt-3 bg-[#F4F5F7] pt-4 pl-4 pb-8">
                   <h3 className="font-semibold text-2xl mb-2">
                     <Link

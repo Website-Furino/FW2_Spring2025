@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notification, Pagination } from "antd";
 
@@ -12,9 +12,10 @@ const ShopPage = () => {
   const [pageSize, setPageSize] = useState(8);
   const [categories, setCategories] = useState<any[]>([]); // State cho danh mục
   const [selectedCategory, setSelectedCategory] = useState("all"); // State cho danh mục đã chọn
+  const nav = useNavigate(); // Dùng để điều hướng đến trang đăng nhập
 
   useEffect(() => {
-    // Lấy sản phẩm
+    // Lấy danh sách sản phẩm
     fetch("http://localhost:3000/products")
       .then((response) => response.json())
       .then((data) => {
@@ -22,11 +23,11 @@ const ShopPage = () => {
         setFilteredProducts(data);
       })
       .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
+        console.error("Lỗi khi lấy sản phẩm:", error);
       });
 
-    // Lấy danh mục (hoặc bạn có thể cung cấp danh mục cố định)
-    fetch("http://localhost:3000/categories") // Giả sử danh mục lưu tại đây
+    // Lấy danh sách danh mục
+    fetch("http://localhost:3000/categories")
       .then((response) => response.json())
       .then((data) => {
         setCategories(data);
@@ -83,46 +84,92 @@ const ShopPage = () => {
     setPriceFilter(value);
     filterProducts(searchTerm, selectedCategory, value);
   };
-  // Hàm thêm sản phẩm vào giỏ hàng và lưu vào DB
-  const addToCart = async (product: any) => {
-    try {
-      // Lấy giỏ hàng hiện tại
-      const response = await axios.get("http://localhost:3000/carts");
-      const cart = response.data;
 
-      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-      const existingProduct = cart.find((item: any) => item.id === product.id);
+  // Hàm thêm sản phẩm vào giỏ hàng
+  const addToCart = async (product: any) => {
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    // Nếu người dùng chưa đăng nhập
+    if (!user.id) {
+      // Kiểm tra xem sản phẩm đã có trong giỏ hàng trong localStorage chưa
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      const existingProduct = cart.find(
+        (item: any) => item.productId === product.id
+      );
 
       if (existingProduct) {
-        // Nếu sản phẩm đã có, tăng số lượng lên 1
+        // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng
         existingProduct.quantity += 1;
-        await axios.put(
-          `http://localhost:3000/carts/${existingProduct.id}`,
-          existingProduct
-        );
-        notification.success({
-          message: "Sản phẩm đã được cập nhật",
-          description: `Số lượng của ${product.name} đã được tăng lên.`,
-        });
       } else {
-        // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
-        const newProduct = { ...product, quantity: 1 };
-        await axios.post("http://localhost:3000/carts", newProduct);
-        notification.success({
-          message: "Thêm vào giỏ hàng thành công",
-          description: `${product.name} đã được thêm vào giỏ hàng.`,
+        // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới vào giỏ hàng
+        const newProduct = {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          quantity: 1,
+        };
+        cart.push(newProduct);
+      }
+
+      // Lưu giỏ hàng vào localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      notification.success({
+        message: "Thêm vào giỏ hàng thành công",
+        description: `${product.name} đã được thêm vào giỏ hàng.`,
+      });
+    } else {
+      // Nếu người dùng đã đăng nhập
+      try {
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng của người dùng chưa
+        const response = await axios.get("http://localhost:3000/carts");
+        const cart = response.data;
+        const existingProduct = cart.find(
+          (item: any) =>
+            item.productId === product.id && item.userId === user.id
+        );
+
+        if (existingProduct) {
+          // Nếu sản phẩm đã có trong giỏ hàng, cập nhật số lượng
+          existingProduct.quantity += 1;
+          await axios.put(
+            `http://localhost:3000/carts/${existingProduct.id}`,
+            existingProduct
+          );
+          notification.success({
+            message: "Sản phẩm đã được cập nhật",
+            description: `Số lượng của ${product.name} đã được tăng lên.`,
+          });
+        } else {
+          // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới vào giỏ hàng
+          const newProduct = {
+            userId: user.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            imageUrl: product.imageUrl,
+            quantity: 1,
+          };
+          await axios.post("http://localhost:3000/carts", newProduct);
+          notification.success({
+            message: "Thêm vào giỏ hàng thành công",
+            description: `${product.name} đã được thêm vào giỏ hàng.`,
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
+        notification.error({
+          message: "Lỗi",
+          description: "Đã có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.",
         });
       }
-    } catch (error) {
-      console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
-      notification.error({
-        message: "Lỗi",
-        description: "Đã có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.",
-      });
     }
   };
 
-  // Phân trang
+  // Hàm phân trang
   const handlePageChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -246,6 +293,7 @@ const ShopPage = () => {
           ))}
         </div>
 
+        {/* Phân trang */}
         <div className="flex justify-center mt-10">
           <Pagination
             current={currentPage}
