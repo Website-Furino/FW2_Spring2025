@@ -44,7 +44,7 @@ const CheckoutPage = () => {
 
       // Lấy giỏ hàng của người dùng từ API
       axios
-        .get(`http://localhost:3000/carts?user=${user.user}`)
+        .get(`http://localhost:3000/carts?user=${user.id}`)
         .then((response) => {
           setCartItems(response.data); // Cập nhật giỏ hàng của người dùng
         })
@@ -53,7 +53,7 @@ const CheckoutPage = () => {
         });
     } else {
       message.error("Không tìm thấy thông tin người dùng!");
-      navigate("/login"); // Chuyển hướng về trang đăng nhập nếu không có người dùng
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -91,8 +91,8 @@ const CheckoutPage = () => {
         0
       ),
       paymentMethod,
-      orderDate, // Thêm ngày đặt hàng vào orderData
-      status: "pending", // Trạng thái mặc định là "pending"
+      orderDate,
+      status: "Chờ xác nhận",
     };
 
     axios
@@ -105,7 +105,7 @@ const CheckoutPage = () => {
         // Xóa các sản phẩm trong giỏ hàng theo id
         cartItems.forEach((item) => {
           axios
-            .delete(`http://localhost:3000/carts/${item.id}`) // API xóa sản phẩm theo ID
+            .delete(`http://localhost:3000/carts/${item.id}`)
             .then(() => {
               // Cập nhật lại giỏ hàng sau khi xóa thành công
               setCartItems((prevCartItems) =>
