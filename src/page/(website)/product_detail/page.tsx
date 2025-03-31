@@ -11,6 +11,7 @@ import {
   Typography,
   InputNumber,
   notification,
+  Image,
 } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -142,7 +143,7 @@ const ProductDetail = () => {
           <Card
             hoverable
             cover={
-              <img
+              <Image
                 alt={product.name}
                 src={product.imageUrl}
                 style={{ width: "100%", height: "auto" }}
