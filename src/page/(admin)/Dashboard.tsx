@@ -1,94 +1,190 @@
-import React, { useState } from 'react';
-import { Table, Button, Space, Popconfirm, message, Row, Col, Card, Statistic } from 'antd';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import dayjs from 'dayjs'; // Import dayjs để xử lý ngày
+import React, { useState, useEffect } from "react";
+import { Row, Col, Card, Statistic, Table, Image } from "antd";
+import axios from "axios"; // Import axios
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"; // Import recharts
+import dayjs from "dayjs"; // Import dayjs
 
 const Dashboard = () => {
-  // Giả lập dữ liệu đơn hàng với ngày tháng năm
-  const orderData = [
-    { id: 1, total: 5000, date: '2025-03-01' },
-    { id: 2, total: 3000, date: '2025-03-02' },
-    { id: 3, total: 7000, date: '2025-03-03' },
-    { id: 4, total: 4000, date: '2025-03-01' },
-    { id: 5, total: 9000, date: '2025-02-28' },
-    { id: 6, total: 6000, date: '2025-02-25' },
-  ];
+  const [orderData, setOrderData] = useState([]); // State để lưu trữ dữ liệu đơn hàng
+  const [topProducts, setTopProducts] = useState([]); // State để lưu trữ sản phẩm bán chạy
 
-  // Group theo ngày, tháng, năm
-  const groupByDate = (data) => {
-    return data.reduce((result, order) => {
-      const date = dayjs(order.date).format('YYYY-MM-DD'); // Group theo ngày
-      if (!result[date]) result[date] = 0;
-      result[date] += order.total;
+  useEffect(() => {
+    // Lấy dữ liệu đơn hàng
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/orders");
+        const data = response.data;
+        console.log(data);
+
+        setOrderData(data); // Lưu dữ liệu vào state
+
+        // Lọc đơn hàng đã giao thành công
+        const successfulOrders = data.filter(
+          (order) => order.status === "Đã giao thành công"
+        );
+
+        // Tính toán sản phẩm bán chạy theo tên sản phẩm
+        const productSales = successfulOrders.reduce((result, order) => {
+          order.cartItems.forEach((product) => {
+            // Kiểm tra nếu sản phẩm đã tồn tại trong result, nếu có thì cộng dồn số lượng
+            if (!result[product.name]) {
+              result[product.name] = {
+                name: product.name,
+                quantity: 0,
+                imageUrl: product.imageUrl,
+              };
+            }
+            result[product.name].quantity += product.quantity; // Cộng dồn số lượng sản phẩm theo tên
+          });
+          return result;
+        }, {});
+
+        // Chuyển dữ liệu sản phẩm bán chạy thành một mảng
+        const topSellingProducts = Object.keys(productSales).map(
+          (productName) => ({
+            key: productName,
+            name: productSales[productName].name,
+            imageUrl: productSales[productName].imageUrl,
+            quantity: productSales[productName].quantity,
+          })
+        );
+        console.log(topSellingProducts);
+
+        // Sắp xếp sản phẩm bán chạy theo số lượng
+        setTopProducts(
+          topSellingProducts.sort((a, b) => b.quantity - a.quantity).slice(0, 5)
+        ); // Lấy 5 sản phẩm bán chạy nhất
+      } catch (error) {
+        console.error("Có lỗi khi lấy dữ liệu đơn hàng:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Nhóm đơn hàng theo ngày, tháng và năm
+  const groupByDate = (orders) => {
+    return orders.reduce((result, order) => {
+      const date = dayjs(order.date).format("YYYY-MM-DD"); // Lấy ngày theo định dạng YYYY-MM-DD
+      if (!result[date]) result[date] = { total: 0, count: 0 };
+      result[date].total += parseFloat(order.totalPrice);
+      result[date].count += 1;
       return result;
     }, {});
   };
 
-  const groupByMonth = (data) => {
-    return data.reduce((result, order) => {
-      const month = dayjs(order.date).format('YYYY-MM'); // Group theo tháng
-      if (!result[month]) result[month] = 0;
-      result[month] += order.total;
+  const groupByMonth = (orders) => {
+    return orders.reduce((result, order) => {
+      const month = dayjs(order.date).format("YYYY-MM"); // Lấy tháng theo định dạng YYYY-MM
+      if (!result[month]) result[month] = { total: 0, count: 0 };
+      result[month].total += parseFloat(order.totalPrice);
+      result[month].count += 1;
       return result;
     }, {});
   };
 
-  const groupByYear = (data) => {
-    return data.reduce((result, order) => {
-      const year = dayjs(order.date).format('YYYY'); // Group theo năm
-      if (!result[year]) result[year] = 0;
-      result[year] += order.total;
+  const groupByYear = (orders) => {
+    return orders.reduce((result, order) => {
+      const year = dayjs(order.date).format("YYYY"); // Lấy năm theo định dạng YYYY
+      if (!result[year]) result[year] = { total: 0, count: 0 };
+      result[year].total += parseFloat(order.totalPrice);
+      result[year].count += 1;
       return result;
     }, {});
   };
 
-  // Các dữ liệu thống kê
   const dailySales = groupByDate(orderData);
   const monthlySales = groupByMonth(orderData);
   const yearlySales = groupByYear(orderData);
 
-  // Biểu đồ và bảng thống kê
-  const salesData = [
-    { name: '2025-03-01', total: dailySales['2025-03-01'] || 0 },
-    { name: '2025-03-02', total: dailySales['2025-03-02'] || 0 },
-    { name: '2025-02-28', total: dailySales['2025-02-28'] || 0 },
-  ];
+  // Chuyển dữ liệu thành dạng mà recharts yêu cầu
+  const dailySalesData = Object.keys(dailySales).map((date) => ({
+    name: date,
+    total: dailySales[date].total,
+    orderCount: dailySales[date].count,
+  }));
 
+  const monthlySalesData = Object.keys(monthlySales).map((month) => ({
+    name: month,
+    total: monthlySales[month].total,
+    orderCount: monthlySales[month].count,
+  }));
+
+  const yearlySalesData = Object.keys(yearlySales).map((year) => ({
+    name: year,
+    total: yearlySales[year].total,
+    orderCount: yearlySales[year].count,
+  }));
+
+  // Các cột bảng thống kê
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: "Thời gian",
+      dataIndex: "name",
+      key: "name",
     },
     {
-      title: 'Ngày',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date) => dayjs(date).format('DD/MM/YYYY'), // Hiển thị ngày theo định dạng
-    },
-    {
-      title: 'Doanh Thu',
-      dataIndex: 'total',
-      key: 'total',
+      title: "Doanh Thu",
+      dataIndex: "total",
+      key: "total",
       render: (total) => `₫${total.toLocaleString()}`,
+    },
+    {
+      title: "Số Đơn Hàng",
+      dataIndex: "orderCount",
+      key: "orderCount",
     },
   ];
 
-  const userData = [
-    { id: 1, name: 'User 1', email: 'user1@example.com', role: 'Admin' },
-    { id: 2, name: 'User 2', email: 'user2@example.com', role: 'User' },
-    { id: 3, name: 'User 3', email: 'user3@example.com', role: 'User' },
+  // Cột bảng sản phẩm bán chạy
+  const productColumns = [
+    {
+      title: "#",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      render: (imageUrl) => (
+        <Image
+          src={imageUrl}
+          alt="Product"
+          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        />
+      ),
+    },
+    {
+      title: "Sản Phẩm",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Số Lượng Bán",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Thống kê tổng doanh thu */}
+    <div style={{ padding: "24px" }}>
+      {/* Thống kê tổng doanh thu của các đơn hàng đã giao thành công */}
       <Row gutter={24}>
         <Col span={8}>
           <Card>
             <Statistic
               title="Tổng Doanh Thu"
-              value={orderData.reduce((acc, order) => acc + order.total, 0)}
+              value={
+                orderData.reduce(
+                  (acc, order) => acc + parseFloat(order.totalPrice),
+                  0
+                ) || 0
+              }
               precision={2}
               prefix="₫"
             />
@@ -96,22 +192,17 @@ const Dashboard = () => {
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic title="Số Đơn Hàng" value={orderData.length} />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic title="Khách Hàng Mới" value={userData.length} />
+            <Statistic title="Số Đơn Hàng" value={orderData.length || 0} />
           </Card>
         </Col>
       </Row>
 
-      {/* Biểu đồ doanh thu theo ngày */}
+      {/* Thống kê theo ngày */}
       <Row gutter={24} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card title="Doanh Thu Theo Ngày">
             <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={salesData}>
+              <LineChart data={dailySalesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -124,14 +215,13 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      {/* Bảng doanh thu theo ngày */}
       <Row gutter={24} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card title="Doanh Thu Theo Ngày">
             <Table
               columns={columns}
-              dataSource={salesData}
-              rowKey="id"
+              dataSource={dailySalesData}
+              rowKey="name"
             />
           </Card>
         </Col>
@@ -141,11 +231,28 @@ const Dashboard = () => {
       <Row gutter={24} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card title="Doanh Thu Theo Tháng">
-            <ul>
-              {Object.keys(monthlySales).map((month) => (
-                <li key={month}>{month}: ₫{monthlySales[month].toLocaleString()}</li>
-              ))}
-            </ul>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={monthlySalesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="total" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={24} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card title="Doanh Thu Theo Tháng">
+            <Table
+              columns={columns}
+              dataSource={monthlySalesData}
+              rowKey="name"
+            />
           </Card>
         </Col>
       </Row>
@@ -154,11 +261,41 @@ const Dashboard = () => {
       <Row gutter={24} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card title="Doanh Thu Theo Năm">
-            <ul>
-              {Object.keys(yearlySales).map((year) => (
-                <li key={year}>{year}: ₫{yearlySales[year].toLocaleString()}</li>
-              ))}
-            </ul>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={yearlySalesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="total" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={24} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card title="Doanh Thu Theo Năm">
+            <Table
+              columns={columns}
+              dataSource={yearlySalesData}
+              rowKey="name"
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Thống kê sản phẩm bán chạy */}
+      <Row gutter={24} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card title="Sản Phẩm Bán Chạy">
+            <Table
+              columns={productColumns}
+              dataSource={topProducts}
+              rowKey="key"
+            />
           </Card>
         </Col>
       </Row>
