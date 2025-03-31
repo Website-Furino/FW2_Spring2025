@@ -14,7 +14,8 @@ const NewsHome = () => {
       .then((data) => {
         // Sắp xếp sản phẩm theo ngày tạo (createdAt)
         const sortedProducts = data.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
         // Lấy 8 sản phẩm mới nhất
@@ -32,14 +33,16 @@ const NewsHome = () => {
     try {
       // Kiểm tra xem người dùng đã đăng nhập chưa
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      
+
       if (user.id) {
         // Người dùng đã đăng nhập, xử lý giỏ hàng trên server
         const response = await axios.get("http://localhost:3000/carts");
         const cart = response.data;
 
         // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const existingProduct = cart.find((item: any) => item.id === product.id);
+        const existingProduct = cart.find(
+          (item: any) => item.id === product.id
+        );
 
         if (existingProduct) {
           // Nếu sản phẩm đã có, tăng số lượng lên 1
@@ -64,7 +67,9 @@ const NewsHome = () => {
       } else {
         // Người dùng chưa đăng nhập, lưu giỏ hàng vào localStorage
         const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const existingProduct = localCart.find((item: any) => item.id === product.id);
+        const existingProduct = localCart.find(
+          (item: any) => item.id === product.id
+        );
 
         if (existingProduct) {
           // Nếu sản phẩm đã có, tăng số lượng lên 1
