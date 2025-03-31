@@ -16,7 +16,7 @@ const CartPage = () => {
     if (user.id) {
       setIsLoggedIn(true);
 
-      // Lấy giỏ hàng của người dùng từ JSON Server
+      // Lấy giỏ hàng của người dùng db
       axios
         .get(`http://localhost:3000/carts?userId=${user.id}`) // Chỉ lấy giỏ hàng của người dùng đăng nhập
         .then((response) => {
@@ -47,7 +47,8 @@ const CartPage = () => {
 
       if (existingProduct) {
         existingProduct.quantity += item.quantity;
-        existingProduct.totalPrice = existingProduct.price * existingProduct.quantity;
+        existingProduct.totalPrice =
+          existingProduct.price * existingProduct.quantity;
       } else {
         cartMap[item.id] = { ...item, totalPrice: item.price * item.quantity };
       }
@@ -63,7 +64,9 @@ const CartPage = () => {
       axios
         .delete(`http://localhost:3000/carts/${productId}`)
         .then(() => {
-          setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+          setCart((prevCart) =>
+            prevCart.filter((item) => item.id !== productId)
+          );
           message.success("Xóa sản phẩm thành công");
           calculateTotal(cart.filter((item) => item.id !== productId));
         })
@@ -90,7 +93,10 @@ const CartPage = () => {
     if (user.id) {
       // Cập nhật giỏ hàng trên server nếu người dùng đã đăng nhập
       axios
-        .put(`http://localhost:3000/carts/${updatedCart[index].id}`, updatedCart[index])
+        .put(
+          `http://localhost:3000/carts/${updatedCart[index].id}`,
+          updatedCart[index]
+        )
         .then(() => {
           setCart(updatedCart);
           calculateTotal(updatedCart);
@@ -133,7 +139,9 @@ const CartPage = () => {
       {cart.length === 0 ? (
         <div className="flex flex-col items-center justify-center w-full h-[400px]">
           <h2 className="text-2xl font-semibold">Giỏ hàng trống</h2>
-          <p className="text-gray-500">Hiện tại giỏ hàng của bạn chưa có sản phẩm nào.</p>
+          <p className="text-gray-500">
+            Hiện tại giỏ hàng của bạn chưa có sản phẩm nào.
+          </p>
           <button
             onClick={() => nav("/shop")}
             className="mt-4 px-6 py-2 bg-[#B88E2F] text-white rounded-lg"
@@ -164,7 +172,9 @@ const CartPage = () => {
                     />
                     <span>{item.name}</span>
                   </td>
-                  <td className="text-left">{item.price.toLocaleString()}đ</td>
+                  <td className="text-left">
+                    {item.price ? item.price.toLocaleString() : 0}đ
+                  </td>
                   <td>
                     <input
                       className="border border-[#e5e5e5] rounded-[5px] text-center w-8 h-8"
@@ -177,7 +187,7 @@ const CartPage = () => {
                     />
                   </td>
                   <td className="text-left">
-                    {item.totalPrice.toLocaleString()}đ
+                    {item.totalPrice ? item.totalPrice.toLocaleString() : 0}đ
                   </td>
                   <td>
                     <AiFillDelete
