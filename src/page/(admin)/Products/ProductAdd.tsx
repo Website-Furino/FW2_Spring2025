@@ -29,7 +29,7 @@ const { Option } = Select;
 
 function ProductAdd() {
   const { mutate } = useCreate({ resource: "products" });
-  const { data:categ } = useList({ resource: "categories" });
+  const { data: categ } = useList({ resource: "categories" });
   const [imageUrl, setImageUrl] = useState<string>("");
   const [previewVisible, setPreviewVisible] = useState<boolean>(false);
 
@@ -86,14 +86,6 @@ function ProductAdd() {
           label="Original Price"
           name="price"
           rules={[{ required: true, message: "Please input product price!" }]}
-        >
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item
-          label="Stock"
-          name="stock"
-          rules={[{ required: true, message: "Please input product stock!" }]}
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
