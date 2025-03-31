@@ -1,23 +1,35 @@
-import { Button, Space, Table, Popconfirm } from "antd";
+import React from "react";
+import { Button, Space, Table, Select } from "antd";
 import { Link } from "react-router-dom";
-import { useDelete, useList } from "../../../hooks"; // Hook của bạn
+import { useList } from "../../../hooks";
+
+const { Option } = Select;
 
 const OrderList = () => {
-  const { data, isLoading } = useList({ resource: "orders" }); // Lấy danh sách đơn hàng
-  const { mutate } = useDelete({ resource: "orders" }); // Xóa đơn hàng
+  const { data, isLoading } = useList({ resource: "orders" });
+  const [filterStatus, setFilterStatus] = React.useState("");
+
+  // Sắp xếp đơn hàng theo orderDate
+  const sortedData = data
+    ? [...data].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
+    : [];
+
+  // Lọc dữ liệu theo trạng thái đã chọn
+  const filteredData = filterStatus
+    ? sortedData.filter((order) => order.status === filterStatus)
+    : sortedData;
 
   const columns = [
-    {
-      title: "#",
-      dataIndex: "id",
-      key: "id",
-      render: (_, __, index) => index + 1, // Số thứ tự
-    },
     {
       title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
-      render: (id) => <Link to={`/order/${id}`}># {id}</Link>, // Liên kết đến chi tiết đơn hàng
+      render: (id) => <Link to={`${id}`}># {id}</Link>,
+    },
+    {
+      title: "Người đặt hàng",
+      dataIndex: ["userInfo", "fullName"],
+      key: "userInfo.fullName",
     },
     {
       title: "Ngày đặt",
@@ -33,7 +45,11 @@ const OrderList = () => {
       title: "Tổng tiền",
       dataIndex: "totalPrice",
       key: "totalPrice",
-      render: (totalPrice) => totalPrice + " đ", // Định dạng tiền tệ
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Actions",
@@ -42,14 +58,6 @@ const OrderList = () => {
           <Button type="primary">
             <Link to={`${order.id}`}>Chi tiết</Link>
           </Button>
-          <Popconfirm
-            title="Bạn có chắc chắn muốn xóa đơn hàng này?"
-            onConfirm={() => mutate(order.id)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button danger>Xóa</Button>
-          </Popconfirm>
         </Space>
       ),
     },
@@ -58,11 +66,26 @@ const OrderList = () => {
   return (
     <div>
       <h1>Danh sách đơn hàng</h1>
+
+      <div style={{ marginBottom: 16 }}>
+        <Select
+          placeholder="Chọn trạng thái"
+          value={filterStatus}
+          onChange={setFilterStatus}
+          style={{ width: 200 }}
+        >
+          <Option value="">Tất cả</Option>
+          <Option value="Đã giao thành công">Đã giao thành công</Option>
+          <Option value="Đã hủy">Đã hủy</Option>
+          <Option value="Chờ xác nhận">Chờ xác nhận</Option>
+        </Select>
+      </div>
+
       <Table
-        dataSource={data}
+        dataSource={filteredData}
         columns={columns}
         loading={isLoading}
-        rowKey="id" // Sử dụng id làm khóa cho mỗi dòng
+        rowKey="id"
       />
     </div>
   );
