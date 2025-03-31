@@ -1,0 +1,32 @@
+.checkout-container {
+  padding: 30px;
+  background-color: #f9f9f9;
+}
+
+.card-custom {
+  border-radius: 10px;
+}
+
+.cart-items {
+  margin-bottom: 20px;
+}
+
+.cart-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.place-order-btn {
+  background-color: #b88e2f;
+  color: white;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.place-order-btn:hover {
+  background-color: #9c7a1d;
+}
+
+.radio-button {
+  padding: 10px;
+}
