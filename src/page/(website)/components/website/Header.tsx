@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   UserOutlined,
@@ -8,9 +8,10 @@ import {
 import { Dropdown, Menu, message } from "antd";
 
 const Header = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}"); // Lấy email người dùng từ localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}"); // Lấy thông tin người dùng từ localStorage
   const nav = useNavigate();
-  // Hàm đăng xuất
+
+  // Hàm đăng xuất người dùng
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
@@ -21,7 +22,6 @@ const Header = () => {
   // Menu cho người dùng đã đăng nhập
   const userMenu = (
     <Menu>
-      {/* Hiển thị email trong dropdown */}
       <Menu.Item key="0" disabled>
         <span className="text-lg">{user.fullName}</span>
       </Menu.Item>
@@ -81,12 +81,12 @@ const Header = () => {
                     Home
                   </Link>
                 </li>
-                <li className="relative group">
+                <li>
                   <Link
                     to="/shop"
                     className="flex items-center hover:text-yellow-600"
                   >
-                    <span>Shop</span>
+                    Shop
                   </Link>
                 </li>
                 <li>
@@ -111,16 +111,11 @@ const Header = () => {
                   trigger={["click"]}
                 >
                   <button className="flex items-center space-x-2 text-gray-600 hover:text-yellow-600">
-                    {/* Hiển thị chỉ biểu tượng người dùng */}
                     <img
                       src="./img/account.svg"
                       alt="User Icon"
                       className="h-7 w-7"
                     />
-                    {/* Nếu đã đăng nhập, hiển thị email trong dropdown khi click vào icon */}
-                    {/* {!user && (
-                      <span className="ml-2 text-sm text-gray-600">Account</span>
-                    )} */}
                   </button>
                 </Dropdown>
               </div>
@@ -137,7 +132,7 @@ const Header = () => {
                 />
               </Link>
               <Link
-                to="/favorites"
+                to="/wishlist"
                 className="text-gray-600 hover:text-yellow-600"
               >
                 <img
@@ -147,7 +142,7 @@ const Header = () => {
                 />
               </Link>
               <Link
-                to="shop/cart"
+                to="/shop/cart"
                 className="text-gray-600 hover:text-yellow-600"
               >
                 <img
