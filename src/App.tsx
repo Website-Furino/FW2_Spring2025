@@ -1,14 +1,14 @@
+import React from "react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LayoutWebsite from "./page/(website)/layout";
 import LayoutAdmin from "./page/(admin)/LayoutAdmin";
 import NotFoundPage from "./page/(website)/404/page";
-import Login from "./page/(website)/login/Login";
-import Register from "./page/(website)/register/Register";
+import Login from "./page/(website)/auth/login/Login";
+import Register from "./page/(website)/auth/register/Register";
 import ThankYouPage from "./page/(website)/checkout/thankyou";
 import OrderHistory from "./page/(website)/order/OrderHistory";
 import Orders from "./page/(admin)/Orders/Orders";
 import OrderDetail from "./page/(admin)/Orders/OrderDetail";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
 import HomePage from "./page/(website)/home/page";
 import ShopPage from "./page/(website)/shop/page";
 import ProductDetail from "./page/(website)/product_detail/page";
@@ -22,6 +22,8 @@ import UserList from "./page/(admin)/Users/UserList";
 import CategoryList from "./page/(admin)/Categories/CategoryList";
 import CategoryAdd from "./page/(admin)/Categories/CategoryAdd";
 import CategoryEdit from "./page/(admin)/Categories/CategoryEdit";
+import LoginAdmin from "./page/(admin)/auth/Login";
+import PrivateRoute from "./page/(admin)/auth/PrivateRoute";
 
 function App() {
   const routerConfig = createBrowserRouter([
@@ -29,42 +31,15 @@ function App() {
       path: "/",
       element: <LayoutWebsite />,
       children: [
-        {
-          index: true,
-          element: <HomePage />,
-        },
-        {
-          path: "shop",
-          element: <ShopPage />,
-        },
-        {
-          path: "shop/:id",
-          element: <ProductDetail />,
-        },
-        {
-          path: "shop/cart",
-          element: <CartPage />,
-        },
-        {
-          path: "/checkout",
-          element: <CheckoutPage />,
-        },
-        {
-          path: "register",
-          element: <Register />,
-        },
-        {
-          path: "order-history",
-          element: <OrderHistory />,
-        },
-        {
-          path: "shop/checkout/thankyou",
-          element: <ThankYouPage />,
-        },
-        {
-          path: "login",
-          element: <Login />,
-        },
+        { index: true, element: <HomePage /> },
+        { path: "shop", element: <ShopPage /> },
+        { path: "shop/:id", element: <ProductDetail /> },
+        { path: "shop/cart", element: <CartPage /> },
+        { path: "/checkout", element: <CheckoutPage /> },
+        { path: "register", element: <Register /> },
+        { path: "order-history", element: <OrderHistory /> },
+        { path: "shop/checkout/thankyou", element: <ThankYouPage /> },
+        { path: "login", element: <Login /> },
       ],
     },
     {
@@ -72,46 +47,90 @@ function App() {
       element: <LayoutAdmin />,
       children: [
         {
-          index: true,
-          element: <Dashboard />,
+          path: "dashboard",
+          element: (
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          ),
         },
         {
           path: "products",
-          element: <ProductList />,
+          element: (
+            <PrivateRoute>
+              <ProductList />
+            </PrivateRoute>
+          ),
         },
         {
           path: "products/add",
-          element: <ProductAdd />,
+          element: (
+            <PrivateRoute>
+              <ProductAdd />
+            </PrivateRoute>
+          ),
         },
         {
           path: "products/:id/edit",
-          element: <ProductEdit />,
+          element: (
+            <PrivateRoute>
+              <ProductEdit />
+            </PrivateRoute>
+          ),
         },
         {
           path: "categories",
-          element: <CategoryList />,
+          element: (
+            <PrivateRoute>
+              <CategoryList />
+            </PrivateRoute>
+          ),
         },
         {
           path: "categories/add",
-          element: <CategoryAdd />,
+          element: (
+            <PrivateRoute>
+              <CategoryAdd />
+            </PrivateRoute>
+          ),
         },
         {
           path: "categories/:id/edit",
-          element: <CategoryEdit />,
+          element: (
+            <PrivateRoute>
+              <CategoryEdit />
+            </PrivateRoute>
+          ),
         },
         {
           path: "orders",
-          element: <Orders />,
+          element: (
+            <PrivateRoute>
+              <Orders />
+            </PrivateRoute>
+          ),
         },
         {
           path: "orders/:id",
-          element: <OrderDetail />,
+          element: (
+            <PrivateRoute>
+              <OrderDetail />
+            </PrivateRoute>
+          ),
         },
         {
           path: "users",
-          element: <UserList />,
+          element: (
+            <PrivateRoute>
+              <UserList />
+            </PrivateRoute>
+          ),
         },
       ],
+    },
+    {
+      path: "/admin/login",
+      element: <LoginAdmin />,
     },
     { path: "*", element: <NotFoundPage /> },
   ]);

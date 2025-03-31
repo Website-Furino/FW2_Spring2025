@@ -1,7 +1,6 @@
-// HeaderMenu.js
-
 import { Menu } from "antd";
 import Link from "antd/es/typography/Link";
+import { useEffect, useState } from "react";
 
 const items1 = [
   { key: "1", label: "Dashboard", path: "/admin" },
@@ -12,6 +11,18 @@ const items1 = [
 }));
 
 const HeaderMenu = () => {
+  const [adminName, setAdminName] = useState("");
+
+  useEffect(() => {
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    // Kiểm tra và lưu tên admin vào state
+    if (user?.role === "admin") {
+      setAdminName(user?.fullName || "Admin");
+    }
+  }, []);
+
   return (
     <Menu
       theme="dark"
@@ -24,6 +35,12 @@ const HeaderMenu = () => {
           <Link>{item.label}</Link>
         </Menu.Item>
       ))}
+
+      {adminName && (
+        <Menu.Item key="adminName" style={{ float: "right" }}>
+          <span>Welcome, {adminName}</span>
+        </Menu.Item>
+      )}
     </Menu>
   );
 };
