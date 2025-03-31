@@ -76,7 +76,7 @@ const OrderDetail = () => {
       case "Chờ xác nhận":
         return ["Đã xác nhận", "Đã hủy"];
       case "Đã xác nhận":
-        return ["Đang giao hàng"];
+        return ["Đang giao hàng", ["Đã hủy"]];
       case "Đang giao hàng":
         return ["Đã giao thành công"];
       case "Đã giao thành công":
