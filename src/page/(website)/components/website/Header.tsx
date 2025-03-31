@@ -4,6 +4,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   HistoryOutlined,
+  AppstoreAddOutlined,
 } from "@ant-design/icons";
 import { Dropdown, Menu, message } from "antd";
 
@@ -18,6 +19,9 @@ const Header = () => {
     message.success("Đăng xuất thành công");
     nav("/login"); // Điều hướng về trang đăng nhập
   };
+
+  // Kiểm tra nếu người dùng là admin
+  const isAdmin = user.role === "admin"; // Kiểm tra role là admin
 
   // Menu cho người dùng đã đăng nhập
   const userMenu = (
@@ -39,6 +43,15 @@ const Header = () => {
       >
         Thông tin cá nhân
       </Menu.Item>
+      {isAdmin && (
+        <Menu.Item
+          key="4"
+          icon={<AppstoreAddOutlined />}
+          onClick={() => nav("/admin")}
+        >
+          Quản lý Admin
+        </Menu.Item>
+      )}
       <Menu.Item key="3" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
