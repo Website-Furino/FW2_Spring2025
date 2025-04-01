@@ -283,6 +283,15 @@
       "address": "HN",
       "role": "admin",
       "id": 6
+    },
+    {
+      "email": "khuetran@gmail.com",
+      "password": "$2a$10$/r9BxlatXWMZQlsG6i5yT.TwOW9MdK287g96P1IlPAKKkHo0CGu2O",
+      "fullName": "Trần Đoàn Khuê",
+      "phone": "0987654321",
+      "address": "Tân Xuân",
+      "role": "user",
+      "id": 7
     }
   ],
   "carts": [

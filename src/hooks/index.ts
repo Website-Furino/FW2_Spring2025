@@ -69,8 +69,7 @@ export const useAuth = ({ resource = "register" }) => {
         nav("/login");
         return;
       }
-      console.log(data);
-      message.success("Thành công");
+      message.success("Đăng nhập thành công");
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user));
       nav("/");

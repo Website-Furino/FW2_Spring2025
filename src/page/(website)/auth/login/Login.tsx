@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Form, Input, Card } from "antd";
 import { useAuth } from "../../../../hooks";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const { mutate } = useAuth({ resource: "login" });
@@ -34,6 +35,21 @@ const Login = () => {
             </Button>
           </Form.Item>
         </Form>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
+        >
+          <span style={{ marginRight: 10 }}>Chưa có tài khoản?</span>
+          <Link to="/register">
+            <Button type="link" style={{ padding: 0 }}>
+              Đăng ký ngay
+            </Button>
+          </Link>
+        </div>
       </Card>
     </div>
   );
