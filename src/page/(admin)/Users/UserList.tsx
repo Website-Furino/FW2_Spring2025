@@ -7,12 +7,15 @@ const UserList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Lấy dữ liệu người dùng từ API sử dụng Axios
   useEffect(() => {
     axios
-      .get("http://localhost:3000/users") // URL của json-server API
+      .get("http://localhost:3000/users")
       .then((response) => {
-        setUsers(response.data);
+        // Lọc chỉ những người dùng có role là 'user'
+        const filteredUsers = response.data.filter(
+          (user) => user.role === "user"
+        );
+        setUsers(filteredUsers);
         setLoading(false);
       })
       .catch((error) => {
@@ -21,10 +24,9 @@ const UserList = () => {
       });
   }, []);
 
-  if (loading) return <Spin tip="Đang tải..." size="large" />; // Hiển thị loading spinner nếu đang tải
-  if (error) return <Alert message={error} type="error" />; // Hiển thị thông báo lỗi nếu có
+  if (loading) return <Spin tip="Đang tải..." size="large" />;
+  if (error) return <Alert message={error} type="error" />;
 
-  // Định nghĩa các cột của bảng
   const columns = [
     {
       title: "ID",
@@ -55,7 +57,7 @@ const UserList = () => {
         dataSource={users}
         columns={columns}
         rowKey="id"
-        pagination={false} // Nếu muốn phân trang có thể thêm vào
+        pagination={false}
       />
     </div>
   );
