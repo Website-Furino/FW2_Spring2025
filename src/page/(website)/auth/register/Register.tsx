@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Input, message, Row, Col, Card } from "antd";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 type Register = {
   email: string;
@@ -25,7 +26,6 @@ function Register() {
     setLoading(true);
 
     try {
-      // Gửi yêu cầu đăng ký đến API
       const response = await fetch("http://localhost:3000/register", {
         method: "POST",
         headers: {
@@ -46,9 +46,7 @@ function Register() {
       }
 
       const data = await response.json();
-      console.log("Dữ liệu đăng ký: ", data);
-
-      // Chuyển hướng đến trang đăng nhập nếu đăng ký thành công
+      message.success("Đăng ký thành công")
       navigate("/login");
     } catch (error) {
       message.error(error?.message || "Đăng ký thất bại!");
@@ -149,6 +147,21 @@ function Register() {
             </Button>
           </Form.Item>
         </Form>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}
+        >
+          <span style={{ marginRight: 10 }}>Đã có tài khoản?</span>
+          <Link to="/login">
+            <Button type="link" style={{ padding: 0 }}>
+              Đăng nhập ngay
+            </Button>
+          </Link>
+        </div>
       </Card>
     </div>
   );
