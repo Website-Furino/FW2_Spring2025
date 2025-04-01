@@ -14,7 +14,7 @@ const Header = () => {
 
   // Hàm đăng xuất người dùng
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     message.success("Đăng xuất thành công");
     nav("/login"); // Điều hướng về trang đăng nhập

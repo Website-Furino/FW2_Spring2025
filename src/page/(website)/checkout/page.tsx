@@ -44,7 +44,7 @@ const CheckoutPage = () => {
 
       // Lấy giỏ hàng của người dùng từ API
       axios
-        .get(`http://localhost:3000/carts?user=${user.id}`)
+        .get(`http://localhost:3000/carts?userID=${user.id}`)
         .then((response) => {
           setCartItems(response.data); // Cập nhật giỏ hàng của người dùng
         })
