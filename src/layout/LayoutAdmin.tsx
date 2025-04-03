@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import HeaderMenu from "./components/Header";
-import SideMenu from "./components/Side";
+import HeaderMenu from "../page/(admin)/components/Header";
+import SideMenu from "../page/(admin)/components/Side";
 import { Layout, theme } from "antd";
 
 const { Header, Content, Sider } = Layout;

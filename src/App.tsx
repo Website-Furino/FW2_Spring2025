@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import LayoutWebsite from "./page/(website)/layout";
-import LayoutAdmin from "./page/(admin)/LayoutAdmin";
+import LayoutWebsite from "./layout/LayoutWebsite";
+import LayoutAdmin from "./layout/LayoutAdmin";
 import NotFoundPage from "./page/(website)/404/page";
 import Login from "./page/(website)/auth/login/Login";
 import Register from "./page/(website)/auth/register/Register";
