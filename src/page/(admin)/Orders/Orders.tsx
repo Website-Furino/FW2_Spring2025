@@ -1,4 +1,3 @@
-import React from "react";
 import { Button, Space, Table, Select } from "antd";
 import { Link } from "react-router-dom";
 import { useList } from "../../../hooks";

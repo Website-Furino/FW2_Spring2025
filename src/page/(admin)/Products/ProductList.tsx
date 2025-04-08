@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Image, Popconfirm, Space, Table } from "antd";
 import { Link } from "react-router-dom";
 import { useDelete, useList } from "../../../hooks";

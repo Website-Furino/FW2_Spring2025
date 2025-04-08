@@ -1,4 +1,3 @@
-import React from "react";
 import Banner from "../components/website/Banner";
 import NewsHome from "./components/News";
 import Support from "../components/website/Support";

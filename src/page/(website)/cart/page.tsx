@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AiFillDelete } from "react-icons/ai";
 import { message, notification } from "antd";
 import axios from "axios";
