@@ -27,6 +27,7 @@
     "react-router": "^7.3.0",
     "react-router-dom": "^6.30.0",
     "recharts": "^2.15.1",
+    "sub-vn": "^0.0.2",
     "swiper": "^11.2.6",
     "tailwindcss": "^3.4.17"
   },
