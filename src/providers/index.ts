@@ -1,10 +1,10 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:3000/";
+axios.defaults.baseURL = "https://json-server-online-8kf1.onrender.com/";
 
 const token = localStorage.getItem("token");
 const axiosClient = axios.create({
-  baseURL: "http://localhost:3000/",
+  baseURL: "https://json-server-online-8kf1.onrender.com/",
   headers: {
     Authorization: token && `Beaer ${token}`,
   },

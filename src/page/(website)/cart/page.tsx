@@ -15,14 +15,14 @@ const CartPage = () => {
     if (user.id) {
       setIsLoggedIn(true);
       axios
-        .get(`http://localhost:3000/carts?userId=${user.id}`)
+        .get(`https://json-server-online-8kf1.onrender.com/carts?userId=${user.id}`)
         .then(async (response) => {
           const cartData = response.data;
 
           const updatedCart = await Promise.all(
             cartData.map(async (item: any) => {
               const productRes = await axios.get(
-                `http://localhost:3000/products/${item.productId}`
+                `https://json-server-online-8kf1.onrender.com/products/${item.productId}`
               );
               return {
                 ...item,
@@ -44,7 +44,7 @@ const CartPage = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user.id) {
       axios
-        .delete(`http://localhost:3000/carts/${productId}`)
+        .delete(`https://json-server-online-8kf1.onrender.com/carts/${productId}`)
         .then(() => {
           const newCart = cart.filter((item) => item.id !== productId);
           setCart(newCart);
@@ -65,7 +65,7 @@ const CartPage = () => {
     if (!user.id) return;
 
     try {
-      const productRes = await axios.get(`http://localhost:3000/products/${item.productId}`);
+      const productRes = await axios.get(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`);
       const product = productRes.data;
 
       if (quantity > product.stock) {
@@ -80,7 +80,7 @@ const CartPage = () => {
       updatedCart[index].totalPrice = updatedCart[index].price * quantity;
 
       await axios.put(
-        `http://localhost:3000/carts/${updatedCart[index].id}`,
+        `https://json-server-online-8kf1.onrender.com/carts/${updatedCart[index].id}`,
         updatedCart[index]
       );
 

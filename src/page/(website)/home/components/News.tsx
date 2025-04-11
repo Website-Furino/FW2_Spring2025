@@ -34,7 +34,7 @@ const NewsHome = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch("http://localhost:3000/products")
+    fetch("https://json-server-online-8kf1.onrender.com/products")
       .then((response) => response.json())
       .then((data: Product[]) => {
         const sortedProducts = data.sort(
@@ -56,7 +56,7 @@ const NewsHome = () => {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get<CartItem[]>("http://localhost:3000/carts");
+      const res = await axios.get<CartItem[]>("https://json-server-online-8kf1.onrender.com/carts");
       setCartItems(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy giỏ hàng:", err);
@@ -67,12 +67,12 @@ const NewsHome = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}") as User;
 
-      const res = await axios.get<Product>(`http://localhost:3000/products/${product.id}`);
+      const res = await axios.get<Product>(`https://json-server-online-8kf1.onrender.com/products/${product.id}`);
       const latestProduct = res.data;
       const stock = latestProduct.stock;
 
       if (user.id) {
-        const cartRes = await axios.get<CartItem[]>("http://localhost:3000/carts");
+        const cartRes = await axios.get<CartItem[]>("https://json-server-online-8kf1.onrender.com/carts");
         const userCart = cartRes.data.filter((item: CartItem) => item.userId === user.id);
         const existingItem = userCart.find((item: CartItem) => item.productId === product.id);
         const currentQty = existingItem?.quantity || 0;
@@ -86,13 +86,13 @@ const NewsHome = () => {
         }
 
         if (existingItem) {
-          await axios.put(`http://localhost:3000/carts/${existingItem.id}`, {
+          await axios.put(`https://json-server-online-8kf1.onrender.com/carts/${existingItem.id}`, {
             ...existingItem,
             quantity: currentQty + 1,
             totalPrice: (currentQty + 1) * product.price,
           });
         } else {
-          await axios.post<CartItem>("http://localhost:3000/carts", {
+          await axios.post<CartItem>("https://json-server-online-8kf1.onrender.com/carts", {
             productId: product.id,
             name: product.name,
             imageUrl: product.imageUrl,

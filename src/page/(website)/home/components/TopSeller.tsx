@@ -43,7 +43,7 @@ const TopSellerPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const productsRes = await axios.get("http://localhost:3000/products");
+        const productsRes = await axios.get("https://json-server-online-8kf1.onrender.com/products");
         const products: Product[] = productsRes.data;
 
         const productsMap: { [key: string]: Product } = {};
@@ -51,7 +51,7 @@ const TopSellerPage = () => {
           productsMap[p.name] = p;
         });
 
-        const ordersRes = await axios.get("http://localhost:3000/orders");
+        const ordersRes = await axios.get("https://json-server-online-8kf1.onrender.com/orders");
         const orders: Order[] = ordersRes.data;
 
         const successfulOrders = orders.filter(
@@ -104,7 +104,7 @@ const TopSellerPage = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:3000/products/${product.id}`
+        `https://json-server-online-8kf1.onrender.com/products/${product.id}`
       );
       const latestProduct: Product = res.data;
 
@@ -116,7 +116,7 @@ const TopSellerPage = () => {
         return;
       }
 
-      const cartRes = await axios.get("http://localhost:3000/carts");
+      const cartRes = await axios.get("https://json-server-online-8kf1.onrender.com/carts");
       const userCart: CartItem[] = cartRes.data.filter(
         (item: CartItem) => item.userId === user.id
       );
@@ -136,7 +136,7 @@ const TopSellerPage = () => {
       }
 
       if (existingItem) {
-        await axios.put(`http://localhost:3000/carts/${existingItem.id}`, {
+        await axios.put(`https://json-server-online-8kf1.onrender.com/carts/${existingItem.id}`, {
           ...existingItem,
           quantity: existingItem.quantity + 1,
           totalPrice: (existingItem.quantity + 1) * product.price,
@@ -151,7 +151,7 @@ const TopSellerPage = () => {
           quantity: 1,
           totalPrice: product.price,
         };
-        await axios.post("http://localhost:3000/carts", newCartItem);
+        await axios.post("https://json-server-online-8kf1.onrender.com/carts", newCartItem);
       }
 
       setTopProducts((prev) =>
