@@ -14,7 +14,11 @@ import { UploadOutlined } from "@ant-design/icons";
 import { useCreate, useList } from "../../../hooks";
 import { RcFile } from "antd/es/upload/interface";
 
-type ProductForm = {
+const { Option } = Select;
+
+// ================= INTERFACE =================
+
+interface ProductForm {
   name: string;
   price: number;
   stock: number;
@@ -23,13 +27,19 @@ type ProductForm = {
   material: string;
   imageUrl: string;
   noibat: boolean;
-};
+}
 
-const { Option } = Select;
+interface Category {
+  id: number | string;
+  name: string;
+}
+
+// ================= COMPONENT =================
 
 function ProductAdd() {
   const { mutate } = useCreate({ resource: "products" });
   const { data: categ } = useList({ resource: "categories" });
+
   const [imageUrl, setImageUrl] = useState<string>("");
   const [previewVisible, setPreviewVisible] = useState<boolean>(false);
 
@@ -56,11 +66,8 @@ function ProductAdd() {
       return;
     }
 
-    const productData = { ...values, imageUrl };
+    const productData: ProductForm = { ...values, imageUrl };
     mutate(productData);
-
-    const categoryData = { ...values };
-    categ(categoryData);
   };
 
   return (
@@ -73,7 +80,7 @@ function ProductAdd() {
       }}
     >
       <h2>Add New Product</h2>
-      <Form onFinish={onFinish}>
+      <Form onFinish={onFinish} layout="vertical">
         <Form.Item
           label="Product Name"
           name="name"
@@ -91,20 +98,24 @@ function ProductAdd() {
         </Form.Item>
 
         <Form.Item
+          label="Stock"
+          name="stock"
+          rules={[{ required: true, message: "Please input stock!" }]}
+        >
+          <InputNumber min={0} style={{ width: "100%" }} />
+        </Form.Item>
+
+        <Form.Item
           label="Category"
           name="categoryName"
-          rules={[
-            { required: true, message: "Please select product category!" },
-          ]}
+          rules={[{ required: true, message: "Please select category!" }]}
         >
           <Select placeholder="Select a category">
-            {/* Displaying categories dynamically */}
-            {categ &&
-              categ.map((cat) => (
-                <Option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </Option>
-              ))}
+            {categ?.map((cat: Category) => (
+              <Option key={cat.id} value={cat.name}>
+                {cat.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -119,9 +130,7 @@ function ProductAdd() {
         <Form.Item
           label="Material"
           name="material"
-          rules={[
-            { required: true, message: "Please input product material!" },
-          ]}
+          rules={[{ required: true, message: "Please input material!" }]}
         >
           <Input placeholder="Khung gỗ bọc vải" />
         </Form.Item>
@@ -129,7 +138,7 @@ function ProductAdd() {
         <Form.Item
           label="Product Image"
           name="imageUrl"
-          rules={[{ required: true, message: "Please upload product image!" }]}
+          rules={[{ required: true, message: "Please upload image!" }]}
         >
           <Upload beforeUpload={handleUploadChange} showUploadList={false}>
             <Button icon={<UploadOutlined />}>Click to Upload</Button>

@@ -1,5 +1,6 @@
+// ... các import vẫn giữ nguyên như của bạn
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import {
   Button,
@@ -18,7 +19,6 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import { Link, useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
@@ -27,12 +27,11 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1); // Số lượng mặc định là 1
-  const { id } = useParams(); // Lấy ID sản phẩm từ URL
+  const [quantity, setQuantity] = useState(1);
+  const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Lấy dữ liệu sản phẩm
     axios
       .get(`http://localhost:3000/products/${id}`)
       .then((response) => {
@@ -41,7 +40,6 @@ const ProductDetail = () => {
 
         const categoryName = response.data.categoryName;
         if (categoryName) {
-          // Lọc sản phẩm liên quan theo category
           axios
             .get(
               `http://localhost:3000/products?categoryName=${encodeURIComponent(
@@ -67,9 +65,7 @@ const ProductDetail = () => {
       });
   }, [id]);
 
-  // Hàm xử lý thêm sản phẩm vào giỏ hàng
   const handleAddToCart = () => {
-    // Kiểm tra nếu người dùng chưa đăng nhập
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (!user.id) {
       notification.error({
@@ -80,7 +76,6 @@ const ProductDetail = () => {
       return;
     }
 
-    // Kiểm tra số lượng sản phẩm hợp lệ
     if (quantity < 1 || quantity > product.stock) {
       notification.error({
         message: "Số lượng không hợp lệ",
@@ -89,24 +84,51 @@ const ProductDetail = () => {
       return;
     }
 
-    // Tạo đối tượng giỏ hàng
-    const cartItem = {
-      userId: user.id, // Thêm userId để gắn giỏ hàng với người dùng
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      quantity,
-      imageUrl: product.imageUrl,
-    };
-
-    // Gửi yêu cầu POST đến API giỏ hàng
     axios
-      .post("http://localhost:3000/carts", cartItem)
-      .then(() => {
-        notification.success({
-          message: "Thêm vào giỏ hàng thành công",
-          description: `${product.name} đã được thêm vào giỏ hàng.`,
-        });
+      .get(`http://localhost:3000/carts?userId=${user.id}&productId=${product.id}`)
+      .then((res) => {
+        const existingCartItem = res.data[0];
+        const currentQty = existingCartItem ? existingCartItem.quantity : 0;
+        const totalQty = currentQty + quantity;
+
+        if (totalQty > product.stock) {
+          notification.error({
+            message: "Vượt quá số lượng tồn kho",
+            description: `Bạn chỉ có thể thêm tối đa ${
+              product.stock - currentQty
+            } sản phẩm nữa vào giỏ.`,
+          });
+          return;
+        }
+
+        if (existingCartItem) {
+          axios
+            .patch(`http://localhost:3000/carts/${existingCartItem.id}`, {
+              quantity: totalQty,
+            })
+            .then(() => {
+              notification.success({
+                message: "Cập nhật giỏ hàng thành công",
+                description: `${product.name} đã được cập nhật số lượng.`,
+              });
+            });
+        } else {
+          const cartItem = {
+            userId: user.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity,
+            imageUrl: product.imageUrl,
+          };
+
+          axios.post("http://localhost:3000/carts", cartItem).then(() => {
+            notification.success({
+              message: "Thêm vào giỏ hàng thành công",
+              description: `${product.name} đã được thêm vào giỏ hàng.`,
+            });
+          });
+        }
       })
       .catch(() => {
         notification.error({
@@ -185,13 +207,11 @@ const ProductDetail = () => {
               <Descriptions.Item label="Nổi bật">
                 {product.noibat ? "Có" : "Không"}
               </Descriptions.Item>
-              {/* Hiển thị danh mục sản phẩm */}
               <Descriptions.Item label="Danh mục">
                 {product.categoryName}
               </Descriptions.Item>
             </Descriptions>
 
-            {/* Số lượng */}
             <div style={{ marginTop: "20px" }}>
               <Text>Số lượng:</Text>
               <InputNumber
@@ -225,7 +245,6 @@ const ProductDetail = () => {
         </Col>
       </Row>
 
-      {/* Hiển thị sản phẩm liên quan dưới dạng Swiper */}
       <div style={{ marginTop: "50px" }}>
         <Title level={3}>Sản phẩm liên quan</Title>
         <Swiper
@@ -259,24 +278,13 @@ const ProductDetail = () => {
                   )}
                   <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black bg-opacity-50">
                     <button
-                      onClick={() => handleAddToCart(product)} // Gọi handleAddToCart khi bấm vào nút
                       className="bg-white text-yellow-600 font-semibold py-3 px-11 mb-2"
+                      onClick={() => {
+                        navigate(`/shop/${product.id}`);
+                      }}
                     >
-                      Thêm vào giỏ hàng
+                      Xem chi tiết
                     </button>
-                    <div className="flex space-x-4 text-white">
-                      <button className="flex items-center space-x-1">
-                        <i className="fa-solid fa-share-nodes" />
-                        <span>Chia sẻ</span>
-                      </button>
-                      <button className="flex items-center space-x-1">
-                        <i className="fa-solid fa-arrow-right-arrow-left" />
-                      </button>
-                      <button className="flex items-center space-x-1">
-                        <i className="fas fa-heart" />
-                        <span>Yêu Thích</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
                 <div className="mt-3 bg-[#F4F5F7] pt-4 pl-4 pb-8">

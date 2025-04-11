@@ -12,11 +12,13 @@ import {
   message,
   Radio,
   Divider,
+  Select,
 } from "antd";
 import { CreditCardOutlined, IdcardOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const CheckoutPage = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -28,13 +30,19 @@ const CheckoutPage = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [provinces, setProvinces] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<any>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<any>(null);
+  const [selectedWard, setSelectedWard] = useState<any>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     if (user && user.email) {
-      // Cập nhật thông tin người dùng từ localStorage
       setUserInfo({
         email: user.email,
         fullName: user.fullName,
@@ -42,11 +50,10 @@ const CheckoutPage = () => {
         address: user.address,
       });
 
-      // Lấy giỏ hàng của người dùng từ API
       axios
         .get(`http://localhost:3000/carts?userID=${user.id}`)
         .then((response) => {
-          setCartItems(response.data); // Cập nhật giỏ hàng của người dùng
+          setCartItems(response.data);
         })
         .catch((error) => {
           console.error("Error fetching cart items:", error);
@@ -55,6 +62,10 @@ const CheckoutPage = () => {
       message.error("Không tìm thấy thông tin người dùng!");
       navigate("/login");
     }
+
+    axios.get("https://provinces.open-api.vn/api/?depth=1").then((res) => {
+      setProvinces(res.data);
+    });
   }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +73,35 @@ const CheckoutPage = () => {
     setUserInfo((prevState) => ({
       ...prevState,
       [name]: value,
+    }));
+  };
+
+  const handleProvinceChange = (code: string) => {
+    const province = provinces.find((p: any) => p.code === code);
+    setSelectedProvince(province);
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    axios
+      .get(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
+      .then((res) => setDistricts(res.data.districts));
+  };
+
+  const handleDistrictChange = (code: string) => {
+    const district = districts.find((d: any) => d.code === code);
+    setSelectedDistrict(district);
+    setSelectedWard(null);
+    axios
+      .get(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
+      .then((res) => setWards(res.data.wards));
+  };
+
+  const handleWardChange = (code: string) => {
+    const ward = wards.find((w: any) => w.code === code);
+    setSelectedWard(ward);
+
+    setUserInfo((prev) => ({
+      ...prev,
+      address: `${ward.name}, ${selectedDistrict.name}, ${selectedProvince.name}`,
     }));
   };
 
@@ -80,7 +120,6 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Lấy ngày hiện tại để làm ngày đặt hàng
     const orderDate = new Date().toISOString();
 
     const orderData = {
@@ -97,19 +136,15 @@ const CheckoutPage = () => {
 
     axios
       .post("http://localhost:3000/orders", orderData)
-      .then((response) => {
-        console.log(response);
-
+      .then(() => {
         message.success("Đặt hàng thành công!");
 
-        // Xóa các sản phẩm trong giỏ hàng theo id
         cartItems.forEach((item) => {
           axios
             .delete(`http://localhost:3000/carts/${item.id}`)
             .then(() => {
-              // Cập nhật lại giỏ hàng sau khi xóa thành công
-              setCartItems((prevCartItems) =>
-                prevCartItems.filter((cartItem) => cartItem.id !== item.id)
+              setCartItems((prev) =>
+                prev.filter((cartItem) => cartItem.id !== item.id)
               );
             })
             .catch((error) => {
@@ -136,12 +171,10 @@ const CheckoutPage = () => {
       </Title>
 
       <Row gutter={24}>
-        {/* Box 1: Form thông tin người dùng */}
         <Col span={12}>
           <Card
             title="Thông tin người dùng"
             bordered={false}
-            className="card-custom"
             style={{ boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)" }}
           >
             <Form layout="vertical" hideRequiredMark>
@@ -151,7 +184,6 @@ const CheckoutPage = () => {
                   value={userInfo.fullName}
                   onChange={handleInputChange}
                   placeholder="Nhập họ và tên"
-                  style={{ borderRadius: "8px" }}
                 />
               </Form.Item>
 
@@ -161,7 +193,6 @@ const CheckoutPage = () => {
                   value={userInfo.phone}
                   onChange={handleInputChange}
                   placeholder="Nhập số điện thoại"
-                  style={{ borderRadius: "8px" }}
                 />
               </Form.Item>
 
@@ -171,35 +202,78 @@ const CheckoutPage = () => {
                   value={userInfo.email}
                   onChange={handleInputChange}
                   placeholder="Nhập email"
-                  style={{ borderRadius: "8px" }}
                 />
               </Form.Item>
 
-              <Form.Item label="Địa chỉ">
+              <Form.Item label="Tỉnh / Thành phố">
+                <Select
+                  showSearch
+                  placeholder="Chọn tỉnh/thành phố"
+                  onChange={handleProvinceChange}
+                  value={selectedProvince?.code}
+                >
+                  {provinces.map((p) => (
+                    <Option key={p.code} value={p.code}>
+                      {p.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Quận / Huyện">
+                <Select
+                  showSearch
+                  placeholder="Chọn quận/huyện"
+                  onChange={handleDistrictChange}
+                  value={selectedDistrict?.code}
+                  disabled={!selectedProvince}
+                >
+                  {districts.map((d) => (
+                    <Option key={d.code} value={d.code}>
+                      {d.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Phường / Xã">
+                <Select
+                  showSearch
+                  placeholder="Chọn phường/xã"
+                  onChange={handleWardChange}
+                  value={selectedWard?.code}
+                  disabled={!selectedDistrict}
+                >
+                  {wards.map((w) => (
+                    <Option key={w.code} value={w.code}>
+                      {w.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Địa chỉ chi tiết">
                 <Input
                   name="address"
                   value={userInfo.address}
                   onChange={handleInputChange}
-                  placeholder="Nhập địa chỉ"
-                  style={{ borderRadius: "8px" }}
+                  placeholder="Ví dụ: Số 1, đường A, phường B..."
                 />
               </Form.Item>
             </Form>
           </Card>
         </Col>
 
-        {/* Box 2: Hiển thị giỏ hàng và thanh toán */}
         <Col span={12}>
           <Card
             title="Giỏ hàng"
             bordered={false}
-            className="card-custom"
             style={{ boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)" }}
           >
-            <div className="cart-items">
+            <div>
               {cartItems.length > 0 ? (
                 cartItems.map((item) => (
-                  <div key={item.id} className="cart-item">
+                  <div key={item.id}>
                     <Row gutter={16}>
                       <Col span={16}>
                         <Text>{item.name}</Text>
@@ -219,7 +293,7 @@ const CheckoutPage = () => {
 
             <Divider />
 
-            <Row gutter={16}>
+            <Row>
               <Col span={12}>
                 <Text strong>Tổng cộng:</Text>
               </Col>
@@ -235,23 +309,20 @@ const CheckoutPage = () => {
 
             <Divider />
 
-            {/* Phương thức thanh toán */}
-            <Form.Item label="Chọn phương thức thanh toán">
+            <Form.Item label="Phương thức thanh toán">
               <Radio.Group
                 value={paymentMethod}
                 onChange={handlePaymentMethodChange}
-                style={{ width: "100%" }}
               >
-                <Radio value="COD" style={{ padding: "8px" }}>
+                <Radio value="COD">
                   <IdcardOutlined /> Thanh toán khi nhận hàng (COD)
                 </Radio>
-                <Radio value="VNPAY" style={{ padding: "8px" }}>
+                <Radio value="VNPAY">
                   <CreditCardOutlined /> Thanh toán qua VNPAY
                 </Radio>
               </Radio.Group>
             </Form.Item>
 
-            {/* Button đặt hàng */}
             <Space style={{ width: "100%", marginTop: "20px" }}>
               <Button
                 type="primary"

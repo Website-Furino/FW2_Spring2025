@@ -1,89 +1,107 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios"; // Đảm bảo bạn đã cài axios
-import { notification, Spin } from "antd"; // Nhập Spin để hiển thị trạng thái tải
+import axios from "axios";
+import { notification, Spin } from "antd";
 
 const NewsHome = () => {
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true); // Theo dõi trạng thái tải
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Lấy dữ liệu sản phẩm với xử lý lỗi
     fetch("http://localhost:3000/products")
       .then((response) => response.json())
       .then((data) => {
-        // Sắp xếp sản phẩm theo ngày tạo (createdAt)
         const sortedProducts = data.sort(
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-
-        // Lấy 8 sản phẩm mới nhất
         setProducts(sortedProducts.slice(0, 8));
-        setLoading(false); // Set trạng thái tải là false khi đã lấy xong dữ liệu
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy dữ liệu:", error);
-        setLoading(false); // Set trạng thái tải là false khi có lỗi
+        setLoading(false);
       });
+
+    fetchCart();
   }, []);
 
-  // Hàm thêm sản phẩm vào giỏ hàng
+  const fetchCart = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/carts");
+      setCartItems(res.data);
+    } catch (err) {
+      console.error("Lỗi khi lấy giỏ hàng:", err);
+    }
+  };
+
   const addToCart = async (product: any) => {
     try {
-      // Kiểm tra xem người dùng đã đăng nhập chưa
       const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+      const res = await axios.get(`http://localhost:3000/products/${product.id}`);
+      const latestProduct = res.data;
+      const stock = latestProduct.stock;
+
       if (user.id) {
-        // Người dùng đã đăng nhập, xử lý giỏ hàng trên server
-        const response = await axios.get("http://localhost:3000/carts");
-        const cart = response.data;
+        const cartRes = await axios.get("http://localhost:3000/carts");
+        const userCart = cartRes.data.filter((item: any) => item.userId === user.id);
+        const existingItem = userCart.find((item: any) => item.productId === product.id);
+        const currentQty = existingItem?.quantity || 0;
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const existingProduct = cart.find(
-          (item: any) => item.id === product.id
-        );
+        if (currentQty >= stock) {
+          notification.warning({
+            message: "Hết hàng",
+            description: "Bạn đã thêm tối đa số lượng sản phẩm có sẵn.",
+          });
+          return;
+        }
 
-        if (existingProduct) {
-          // Nếu sản phẩm đã có, tăng số lượng lên 1
-          existingProduct.quantity += 1;
-          await axios.put(
-            `http://localhost:3000/carts/${existingProduct.id}`,
-            existingProduct
-          );
-          notification.success({
-            message: "Sản phẩm đã được cập nhật",
-            description: `Số lượng của ${product.name} đã được tăng lên.`,
+        if (existingItem) {
+          await axios.put(`http://localhost:3000/carts/${existingItem.id}`, {
+            ...existingItem,
+            quantity: currentQty + 1,
+            totalPrice: (currentQty + 1) * product.price,
           });
         } else {
-          // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
-          const newProduct = { ...product, quantity: 1, userId: user.id };
-          await axios.post("http://localhost:3000/carts", newProduct);
-          notification.success({
-            message: "Thêm vào giỏ hàng thành công",
-            description: `${product.name} đã được thêm vào giỏ hàng.`,
+          await axios.post("http://localhost:3000/carts", {
+            productId: product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            price: product.price,
+            userId: user.id,
+            quantity: 1,
+            totalPrice: product.price,
           });
         }
-      } else {
-        // Người dùng chưa đăng nhập, lưu giỏ hàng vào localStorage
-        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const existingProduct = localCart.find(
-          (item: any) => item.id === product.id
-        );
 
-        if (existingProduct) {
-          // Nếu sản phẩm đã có, tăng số lượng lên 1
-          existingProduct.quantity += 1;
+        notification.success({
+          message: "Thêm vào giỏ hàng thành công",
+        });
+        fetchCart();
+      } else {
+        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const existingItem = localCart.find((item: any) => item.id === product.id);
+        const currentQty = existingItem?.quantity || 0;
+
+        if (currentQty >= stock) {
+          notification.warning({
+            message: "Hết hàng",
+            description: "Bạn đã thêm tối đa số lượng sản phẩm có sẵn.",
+          });
+          return;
+        }
+
+        if (existingItem) {
+          existingItem.quantity += 1;
         } else {
-          // Nếu sản phẩm chưa có trong giỏ hàng, thêm sản phẩm mới với số lượng = 1
           localCart.push({ ...product, quantity: 1 });
         }
 
-        // Lưu giỏ hàng vào localStorage
         localStorage.setItem("cart", JSON.stringify(localCart));
         notification.success({
           message: "Thêm vào giỏ hàng thành công",
-          description: `${product.name} đã được thêm vào giỏ hàng.`,
         });
       }
     } catch (error) {
@@ -101,7 +119,6 @@ const NewsHome = () => {
         Sản phẩm mới
       </h2>
 
-      {/* Hiển thị spinner khi đang tải sản phẩm */}
       {loading ? (
         <div className="flex justify-center">
           <Spin size="large" />
@@ -111,22 +128,17 @@ const NewsHome = () => {
           {products.length > 0 ? (
             products.map((product) => (
               <div key={product.id} className="bg-[#F4F5F7]">
-                {/* Ảnh sản phẩm */}
                 <div className="relative group h-80 overflow-hidden">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover transition duration-300 group-hover:opacity-70"
                   />
-
-                  {/* Hiển thị nếu sản phẩm là nổi bật */}
                   {product.noibat && (
                     <span className="absolute top-4 left-4 bg-yellow-500 text-white font-medium px-2 py-1 rounded-full">
                       Nổi bật
                     </span>
                   )}
-
-                  {/* Các nút khi hover */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black bg-opacity-50">
                     <button
                       onClick={() => addToCart(product)}
@@ -150,7 +162,6 @@ const NewsHome = () => {
                   </div>
                 </div>
 
-                {/* Thông tin sản phẩm */}
                 <div className="mt-3 bg-[#F4F5F7] pt-4 pl-4 pb-8">
                   <h3 className="font-semibold text-2xl mb-2">
                     <Link

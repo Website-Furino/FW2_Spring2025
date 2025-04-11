@@ -15,7 +15,11 @@ import { useParams } from "react-router-dom";
 import { useList, useOne, useUpdate } from "../../../hooks";
 import { RcFile } from "antd/es/upload/interface";
 
-type ProductForm = {
+const { Option } = Select;
+
+// ================= INTERFACES =================
+
+interface ProductForm {
   name: string;
   price: number;
   size: string;
@@ -23,16 +27,26 @@ type ProductForm = {
   material: string;
   imageUrl: string;
   noibat: boolean;
-};
+  stock: number;
+}
 
-const { Option } = Select;
+interface Category {
+  id: number | string;
+  name: string;
+}
+
+interface Product extends ProductForm {
+  id: number | string;
+}
+
+// ================= COMPONENT =================
 
 function ProductEdit() {
-  const { id } = useParams();
-  const [form] = Form.useForm();
-  const { data: categ } = useList({ resource: "categories" });
-  const { data: product, isLoading } = useOne({ resource: "products", id });
-  const { mutate } = useUpdate({ resource: "products", id });
+  const { id } = useParams<{ id: string }>();
+  const [form] = Form.useForm<ProductForm>();
+  const { data: categ } = useList<Category>({ resource: "categories" });
+  const { data: product, isLoading } = useOne<Product>({ resource: "products", id });
+  const { mutate } = useUpdate<ProductForm>({ resource: "products", id });
 
   const [imageUrl, setImageUrl] = useState<string>("");
 
@@ -45,8 +59,9 @@ function ProductEdit() {
         categoryName: product.categoryName,
         material: product.material,
         noibat: product.noibat,
+        stock: product.stock,
       });
-      setImageUrl(product.imageUrl || ""); // set default image if no image is set
+      setImageUrl(product.imageUrl || "");
     }
   }, [product, form]);
 
@@ -72,8 +87,9 @@ function ProductEdit() {
       return;
     }
 
-    const productData = { ...values, imageUrl };
+    const productData: ProductForm = { ...values, imageUrl };
     mutate(productData, {
+      onSuccess: () => message.success("Product updated successfully"),
       onError: () => message.error("Failed to update product"),
     });
   };
@@ -92,7 +108,7 @@ function ProductEdit() {
       }}
     >
       <h2>Edit Product</h2>
-      <Form form={form} onFinish={onFinish}>
+      <Form form={form} onFinish={onFinish} layout="vertical">
         <Form.Item
           label="Product Name"
           name="name"
@@ -110,18 +126,24 @@ function ProductEdit() {
         </Form.Item>
 
         <Form.Item
+          label="Stock"
+          name="stock"
+          rules={[{ required: true, message: "Please input stock quantity!" }]}
+        >
+          <InputNumber min={0} style={{ width: "100%" }} />
+        </Form.Item>
+
+        <Form.Item
           label="Category"
           name="categoryName"
           rules={[{ required: true, message: "Please select product category!" }]}
         >
           <Select placeholder="Select a category">
-            {/* Displaying categories dynamically */}
-            {categ &&
-              categ.map((cat) => (
-                <Option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </Option>
-              ))}
+            {categ?.map((cat) => (
+              <Option key={cat.id} value={cat.name}>
+                {cat.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

@@ -1,7 +1,7 @@
 import { Button, Space, Table, Select } from "antd";
 import { Link } from "react-router-dom";
 import { useList } from "../../../hooks";
-
+import React from "react";
 const { Option } = Select;
 
 const OrderList = () => {
@@ -10,9 +10,11 @@ const OrderList = () => {
 
   // Sắp xếp đơn hàng theo orderDate
   const sortedData = data
-    ? [...data].sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate))
+    ? [...data].sort(
+        (a, b) =>
+          new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+      )
     : [];
-
   // Lọc dữ liệu theo trạng thái đã chọn
   const filteredData = filterStatus
     ? sortedData.filter((order) => order.status === filterStatus)
@@ -23,7 +25,7 @@ const OrderList = () => {
       title: "Mã đơn hàng",
       dataIndex: "id",
       key: "id",
-      render: (id) => <Link to={`${id}`}># {id}</Link>,
+      render: (id: number | string) => <Link to={`${id}`}># {id}</Link>,
     },
     {
       title: "Người đặt hàng",
@@ -52,7 +54,7 @@ const OrderList = () => {
     },
     {
       title: "Actions",
-      render: (order) => (
+      render: (order:any) => (
         <Space>
           <Button type="primary">
             <Link to={`${order.id}`}>Chi tiết</Link>

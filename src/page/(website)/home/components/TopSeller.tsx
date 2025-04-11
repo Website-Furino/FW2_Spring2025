@@ -1,137 +1,141 @@
-import  { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { notification } from "antd";
+import { message, notification } from "antd";
 import axios from "axios";
 
 const TopSellerPage = () => {
   const [topProducts, setTopProducts] = useState<any[]>([]);
-  const [productsMap, setProductsMap] = useState<any>({});
+  const nav = useNavigate();
 
-  // Lấy dữ liệu sản phẩm bán chạy và bảng sản phẩm
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Lấy danh sách các sản phẩm từ bảng "products"
-        const productsResponse = await axios.get("http://localhost:3000/products");
-        const products = productsResponse.data;
+        const productsRes = await axios.get("http://localhost:3000/products");
+        const products = productsRes.data;
 
-        // Tạo một map để lưu trữ các sản phẩm theo tên, dễ dàng tra cứu sau này
         const productsMap: { [key: string]: any } = {};
-        products.forEach((product: any) => {
-          productsMap[product.name] = product;
+        products.forEach((p: any) => {
+          productsMap[p.name] = p;
         });
 
-        setProductsMap(productsMap); // Lưu vào state productsMap
+        const ordersRes = await axios.get("http://localhost:3000/orders");
+        const orders = ordersRes.data;
 
-        // Lấy dữ liệu đơn hàng từ bảng "orders"
-        const ordersResponse = await axios.get("http://localhost:3000/orders");
-        const data = ordersResponse.data;
-
-        // Lọc các đơn hàng đã giao thành công
-        const successfulOrders = data.filter(
+        const successfulOrders = orders.filter(
           (order) => order.status === "Đã giao thành công"
         );
 
-        // Tạo một đối tượng để theo dõi các sản phẩm bán
         const productSalesMap: { [key: string]: any } = {};
 
-        // Tính toán số lượng bán của từng sản phẩm, nhóm theo tên sản phẩm
         successfulOrders.forEach((order) => {
-          order.cartItems.forEach((product) => {
-            const productDetails = productsMap[product.name];
-
+          order.cartItems.forEach((item: any) => {
+            const productDetails = productsMap[item.name];
             if (productDetails) {
-              // Nếu sản phẩm có trong bảng products
-              if (productSalesMap[product.name]) {
-                // Nếu sản phẩm đã có trong map (trùng tên), cộng dồn số lượng
-                productSalesMap[product.name].quantity += product.quantity;
+              if (productSalesMap[item.name]) {
+                productSalesMap[item.name].quantity += item.quantity;
               } else {
-                // Nếu chưa có, thêm sản phẩm vào map (giữ id từ bảng products)
-                productSalesMap[product.name] = {
+                productSalesMap[item.name] = {
                   ...productDetails,
-                  quantity: product.quantity,
+                  quantity: item.quantity,
                 };
               }
             }
           });
         });
 
-        // Chuyển dữ liệu từ đối tượng thành mảng
         const productSales = Object.values(productSalesMap);
-
-        console.log(productSales); // Xem dữ liệu đã gộp chính xác chưa
-
-        // Sắp xếp sản phẩm theo số lượng bán
         setTopProducts(
-          productSales.sort((a, b) => b.quantity - a.quantity).slice(0, 5)
+          productSales
+            .sort((a: any, b: any) => b.quantity - a.quantity)
+            .slice(0, 5)
         );
-      } catch (error) {
-        console.error("Có lỗi khi lấy dữ liệu sản phẩm bán chạy:", error);
+      } catch (err) {
+        console.error("Lỗi khi lấy sản phẩm bán chạy:", err);
       }
     };
 
     fetchData();
   }, []);
 
-  // Thêm sản phẩm vào giỏ hàng
   const addToCart = async (product: any) => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      if (user.id) {
-        const response = await axios.get("http://localhost:3000/carts");
-        const cart = response.data;
-        const existingProduct = cart.find(
-          (item: any) => item.id === product.id
-        );
-
-        if (existingProduct) {
-          existingProduct.quantity += 1;
-          await axios.put(
-            `http://localhost:3000/carts/${existingProduct.id}`,
-            existingProduct
-          );
-          notification.success({
-            message: "Sản phẩm đã được cập nhật",
-            description: `Số lượng của ${product.name} đã được tăng lên.`,
-          });
-        } else {
-          const newProduct = { ...product, quantity: 1, userId: user.id };
-          await axios.post("http://localhost:3000/carts", newProduct);
-          notification.success({
-            message: "Thêm vào giỏ hàng thành công",
-            description: `${product.name} đã được thêm vào giỏ hàng.`,
-          });
-        }
-      } else {
-        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const existingProduct = localCart.find(
-          (item: any) => item.id === product.id
-        );
-
-        if (existingProduct) {
-          existingProduct.quantity += 1;
-        } else {
-          localCart.push({ ...product, quantity: 1 });
-        }
-
-        localStorage.setItem("cart", JSON.stringify(localCart));
-        notification.success({
-          message: "Thêm vào giỏ hàng thành công",
-          description: `${product.name} đã được thêm vào giỏ hàng.`,
-        });
-      }
-    } catch (error) {
-      console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
+    if (!user.id) {
       notification.error({
-        message: "Lỗi",
-        description: "Đã có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.",
+        message: "Bạn cần đăng nhập để thêm vào giỏ hàng!",
+        description: "Vui lòng đăng nhập trước khi mua hàng.",
       });
+      nav("/login");
+      return;
+    }
+
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/products/${product.id}`
+      );
+      const latestProduct = res.data;
+
+      if (latestProduct.stock <= 0) {
+        notification.error({
+          message: "Sản phẩm đã hết hàng!",
+          description: "Rất tiếc, sản phẩm này hiện đã hết hàng.",
+        });
+        return;
+      }
+
+      const cartRes = await axios.get("http://localhost:3000/carts");
+      const userCart = cartRes.data.filter(
+        (item: any) => item.userId === user.id
+      );
+      const existingItem = userCart.find(
+        (item: any) => item.productId === product.id
+      );
+      const existingQty = existingItem ? existingItem.quantity : 0;
+
+      if (existingQty + 1 > latestProduct.stock) {
+        notification.warning({
+          message: "Vượt quá số lượng tồn kho!",
+          description: `Chỉ còn ${
+            latestProduct.stock - existingQty
+          } sản phẩm có sẵn.`,
+        });
+        return;
+      }
+
+      if (existingItem) {
+        await axios.put(`http://localhost:3000/carts/${existingItem.id}`, {
+          ...existingItem,
+          quantity: existingItem.quantity + 1,
+          totalPrice: (existingItem.quantity + 1) * product.price,
+        });
+      } else {
+        const newCartItem = {
+          productId: product.id,
+          name: product.name,
+          imageUrl: product.imageUrl,
+          price: product.price,
+          userId: user.id,
+          quantity: 1,
+          totalPrice: product.price,
+        };
+        await axios.post("http://localhost:3000/carts", newCartItem);
+      }
+
+      setTopProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, stock: p.stock - 1 } : p
+        )
+      );
+
+      message.success("Đã thêm vào giỏ hàng!");
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+      message.error("Không thể thêm vào giỏ hàng.");
     }
   };
 
@@ -139,14 +143,13 @@ const TopSellerPage = () => {
     <section className="max-w-7xl mx-auto p-4">
       <h2 className="text-[40px] text-center mb-8">Sản Phẩm Bán Chạy</h2>
 
-      {/* Swiper Slider cho các sản phẩm bán chạy */}
       <Swiper
         modules={[Navigation, Autoplay, Pagination]}
         slidesPerView={1}
         spaceBetween={10}
-        loop={true}
+        loop
         autoplay={{ delay: 2500, disableOnInteraction: false }}
-        navigation={true}
+        navigation
         pagination={{ clickable: true }}
         breakpoints={{
           640: { slidesPerView: 2 },
@@ -158,27 +161,24 @@ const TopSellerPage = () => {
         {topProducts.map((product) => (
           <SwiperSlide key={product.id}>
             <div className="bg-[#F4F5F7]">
-              {/* Box ảnh sản phẩm */}
               <div className="relative group h-80 overflow-hidden">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-full object-cover transition duration-300 group-hover:opacity-70"
                 />
-
-                {/* Hiển thị thẻ Nổi bật */}
                 <span className="absolute top-4 left-4 bg-yellow-500 text-white font-medium px-2 py-1 rounded-full">
                   Bán Chạy
                 </span>
 
-                {/* Các nút khi hover */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black bg-opacity-50">
                   <button
-                    onClick={() => addToCart(product)} // Thêm vào giỏ hàng
+                    onClick={() => addToCart(product)}
                     className="bg-white text-yellow-600 font-semibold py-3 px-11 mb-2"
                   >
                     Thêm vào giỏ hàng
                   </button>
+
                   <div className="flex space-x-4 text-white">
                     <button className="flex items-center space-x-1">
                       <i className="fa-solid fa-share-nodes" />
@@ -195,11 +195,10 @@ const TopSellerPage = () => {
                 </div>
               </div>
 
-              {/* Box thông tin sản phẩm */}
               <div className="mt-3 bg-[#F4F5F7] pt-4 pl-4 pb-8">
                 <h3 className="font-semibold text-2xl mb-2">
                   <Link
-                    to={`/shop/${product.id}`} // Link đến sản phẩm chi tiết
+                    to={`/shop/${product.id}`}
                     className="hover:text-yellow-600"
                   >
                     {product.name.length > 20
@@ -212,6 +211,9 @@ const TopSellerPage = () => {
                     {product.price.toLocaleString()}
                     <sup>đ</sup>
                   </span>
+                  {product.stock < 0 && (
+                    <span className="text-red-500 font-medium">Hết hàng</span>
+                  )}
                 </div>
               </div>
             </div>

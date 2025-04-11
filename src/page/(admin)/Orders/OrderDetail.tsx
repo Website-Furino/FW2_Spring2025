@@ -1,189 +1,295 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
-  message,
   Card,
+  Typography,
   Row,
   Col,
-  Typography,
   Divider,
-  List,
+  Tag,
+  Spin,
+  Descriptions,
+  message,
   Select,
+  Modal,
+  Input,
 } from "antd";
-import { useParams } from "react-router-dom";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const OrderDetail = () => {
+  const { id } = useParams();
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("");
-  const { id } = useParams();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [updating, setUpdating] = useState(false);
+
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      axios
-        .get(`http://localhost:3000/orders/${id}`)
-        .then((response) => {
-          setOrderDetails(response.data); // Lưu thông tin đơn hàng vào state
-          setStatus(response.data.status); // Lưu trạng thái hiện tại
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Lỗi khi lấy thông tin đơn hàng:", error);
-          message.error("Không thể lấy thông tin đơn hàng.");
-          setLoading(false);
-        });
-    } else {
-      message.error("Không tìm thấy ID đơn hàng!");
-      setLoading(false);
-    }
+    fetchOrderDetails();
   }, [id]);
 
-  const handleStatusChange = (newStatus: string) => {
-    // Giữ nguyên các thông tin đơn hàng khác và chỉ thay đổi trạng thái
-    const updatedOrder = {
-      ...orderDetails, // Giữ nguyên tất cả các thông tin hiện tại của đơn hàng
-      status: newStatus, // Cập nhật trạng thái mới
-    };
-
+  const fetchOrderDetails = () => {
+    setLoading(true);
     axios
-      .put(`http://localhost:3000/orders/${id}`, updatedOrder) // Gửi toàn bộ đơn hàng với trạng thái mới
+      .get(`http://localhost:3000/orders/${id}`)
       .then((response) => {
-        setStatus(newStatus); // Cập nhật trạng thái mới trong state
-        setOrderDetails(response.data); // Cập nhật lại thông tin đơn hàng sau khi cập nhật
-        message.success("Cập nhật trạng thái đơn hàng thành công!");
+        setOrderDetails(response.data);
+        setLoading(false);
       })
       .catch((error) => {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
-        message.error("Không thể cập nhật trạng thái đơn hàng.");
+        console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
+        message.error("Không thể lấy chi tiết đơn hàng!");
+        setLoading(false);
       });
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!orderDetails) {
-    return <div>Không có thông tin đơn hàng.</div>;
-  }
-
-  // Cấu hình các trạng thái có thể thay đổi từ trạng thái hiện tại
-  const getAvailableStatusOptions = (currentStatus: string) => {
-    switch (currentStatus) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
       case "Chờ xác nhận":
-        return ["Đã xác nhận", "Đã hủy"];
-      case "Đã xác nhận":
-        return ["Đang giao hàng", ["Đã hủy"]];
+        return "orange";
       case "Đang giao hàng":
-        return ["Đã giao thành công"];
-      case "Đã giao thành công":
-        return []; // Không thể thay đổi trạng thái nữa
+        return "blue";
+      case "Hoàn thành":
+        return "green";
       case "Đã hủy":
-        return []; // Không thể thay đổi trạng thái nữa
+        return "red";
       default:
-        return []; // Trạng thái mặc định hoặc không hợp lệ
+        return "default";
     }
   };
 
+  const getNextStatusOptions = () => {
+    if (!orderDetails || !orderDetails.status) return [];
+    switch (orderDetails.status) {
+      case "Chờ xác nhận":
+        return ["Đã xác nhận", "Đã hủy"];
+      case "Đã xác nhận":
+        return ["Đang giao hàng", "Đã hủy"];
+      case "Đang giao hàng":
+        return ["Đã giao thành công"];
+      default:
+        return [];
+    }
+  };
+
+  const handleStatusSelect = (value: string) => {
+    if (value === "Đã hủy") {
+      setSelectedStatus(value);
+      setIsCancelModalVisible(true);
+    } else {
+      handleStatusChange(value);
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancelReason.trim()) {
+      message.warning("Vui lòng nhập lý do hủy!");
+      return;
+    }
+
+    await handleStatusChange("Đã hủy");
+    setIsCancelModalVisible(false);
+    setCancelReason("");
+    setSelectedStatus(null);
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!orderDetails) return;
+    setUpdating(true);
+    const currentStatus = orderDetails.status;
+
+    try {
+      for (const item of orderDetails.cartItems) {
+        const productRes = await axios.get(
+          `http://localhost:3000/products/${item.productId}`
+        );
+        const product = productRes.data;
+        let updatedStock = product.stock;
+
+        if (newStatus === "Đã xác nhận" && currentStatus === "Chờ xác nhận") {
+          updatedStock -= item.quantity;
+          if (updatedStock < 0) {
+            message.error(`Không đủ hàng cho sản phẩm: ${item.name}`);
+            setUpdating(false);
+            return;
+          }
+        }
+
+        if (newStatus === "Đã hủy" && currentStatus === "Đã xác nhận") {
+          updatedStock += item.quantity;
+        }
+
+        await axios.patch(`http://localhost:3000/products/${item.productId}`, {
+          stock: updatedStock,
+        });
+      }
+
+      await axios.patch(`http://localhost:3000/orders/${orderDetails.id}`, {
+        status: newStatus,
+        cancelReason: newStatus === "Đã hủy" ? cancelReason : undefined,
+        canceledBy:
+          newStatus === "Đã hủy" ? "Admin" : undefined,
+        cancelDate: newStatus === "Đã hủy" ? new Date().toISOString() : undefined,
+      });
+
+      message.success("Cập nhật trạng thái thành công!");
+      fetchOrderDetails();
+    } catch (error) {
+      console.error("Lỗi khi cập nhật đơn hàng:", error);
+      message.error("Không thể cập nhật đơn hàng!");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: 50 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!orderDetails) return null;
+
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", paddingTop: "50px" }}>
-      <Title level={3} className="text-center mb-30">
-        Chi tiết đơn hàng #{id}
-      </Title>
+    <div style={{ maxWidth: "1000px", margin: "0 auto", paddingTop: "40px" }}>
+      <Title level={3}>Chi tiết đơn hàng</Title>
 
-      <Card title="Thông tin đơn hàng" bordered={false}>
-        <Row gutter={24}>
-          <Col span={12}>
-            <Text strong>Họ và tên: </Text>
-            <Text>{orderDetails.userInfo.fullName}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Email: </Text>
-            <Text>{orderDetails.userInfo.email}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Số điện thoại: </Text>
-            <Text>{orderDetails.userInfo.phone}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Địa chỉ: </Text>
-            <Text>{orderDetails.userInfo.address}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Phương thức thanh toán: </Text>
-            <Text>{orderDetails.paymentMethod}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Trạng thái: </Text>
-            <Text>{orderDetails.status}</Text>
-          </Col>
-          <Col span={12}>
-            <Text strong>Ngày đặt hàng: </Text>
-            <Text>{new Date(orderDetails.orderDate).toLocaleDateString()}</Text>
-          </Col>
-        </Row>
+      <Card style={{ marginBottom: 24 }}>
+        <Descriptions title="Thông tin khách hàng" bordered column={1}>
+          <Descriptions.Item label="Họ và tên">
+            {orderDetails.userInfo.fullName}
+          </Descriptions.Item>
+          <Descriptions.Item label="Số điện thoại">
+            {orderDetails.userInfo.phone}
+          </Descriptions.Item>
+          <Descriptions.Item label="Email">
+            {orderDetails.userInfo.email}
+          </Descriptions.Item>
+          <Descriptions.Item label="Địa chỉ">
+            {orderDetails.userInfo.address}
+          </Descriptions.Item>
+        </Descriptions>
+      </Card>
 
-        <Divider />
-
-        <Title level={4}>Sản phẩm trong đơn hàng</Title>
-        <List
-          itemLayout="horizontal"
-          dataSource={orderDetails.cartItems}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                title={item.name}
-                description={`Số lượng: ${
-                  item.quantity
-                } | Giá: ${item.price.toLocaleString()} đ`}
-              />
-            </List.Item>
-          )}
-        />
+      <Card title="Sản phẩm đã đặt" style={{ marginBottom: 24 }}>
+        {orderDetails.cartItems.map((item: any) => (
+          <Row key={item.id} gutter={16} style={{ marginBottom: 10 }}>
+            <Col span={16}>
+              <Text>{item.name}</Text>
+            </Col>
+            <Col span={4}>
+              <Text>Số lượng: {item.quantity}</Text>
+            </Col>
+            <Col span={4} style={{ textAlign: "right" }}>
+              <Text strong>
+                {(item.price * item.quantity).toLocaleString()}đ
+              </Text>
+            </Col>
+          </Row>
+        ))}
 
         <Divider />
-
-        <Row gutter={16}>
+        <Row>
           <Col span={12}>
-            <Text strong>Tổng giá trị: </Text>
+            <Text strong>Tổng cộng:</Text>
           </Col>
           <Col span={12} style={{ textAlign: "right" }}>
-            <Text strong style={{ fontSize: "18px" }}>
-              {orderDetails.cartItems
-                .reduce((acc, item) => acc + item.price * item.quantity, 0)
-                .toLocaleString()}
-              đ
+            <Text strong style={{ fontSize: 18 }}>
+              {orderDetails.totalPrice.toLocaleString()}đ
             </Text>
           </Col>
         </Row>
+      </Card>
+
+      <Card title="Thông tin đơn hàng">
+        <Row gutter={16}>
+          <Col span={12}>
+            <Text>Phương thức thanh toán:</Text>
+            <br />
+            <Text strong>{orderDetails.paymentMethod}</Text>
+          </Col>
+          <Col span={12}>
+            <Text>Ngày đặt hàng:</Text>
+            <br />
+            <Text>{new Date(orderDetails.orderDate).toLocaleString()}</Text>
+          </Col>
+        </Row>
 
         <Divider />
 
-        <Row gutter={16}>
+        <Row gutter={16} align="middle">
           <Col span={12}>
-            <Text strong>Chọn trạng thái: </Text>
+            <Text>Trạng thái:</Text>
+            <br />
+            <Tag color={getStatusColor(orderDetails.status)}>
+              {orderDetails.status}
+            </Tag>
           </Col>
-          <Col span={12} style={{ textAlign: "right" }}>
-            {/* Chỉ hiển thị dropdown nếu đơn hàng chưa giao hoặc chưa giao thành công */}
-            <Select
-              value={status}
-              onChange={handleStatusChange}
-              style={{ width: 200 }}
-            >
-              {getAvailableStatusOptions(orderDetails.status).map(
-                (statusOption) => (
-                  <Option key={statusOption} value={statusOption}>
-                    {statusOption}
+          <Col span={12}>
+            {getNextStatusOptions().length > 0 && (
+              <Select
+                placeholder="Chọn trạng thái"
+                style={{ width: "100%" }}
+                onChange={handleStatusSelect}
+                disabled={updating}
+              >
+                {getNextStatusOptions().map((status) => (
+                  <Option key={status} value={status}>
+                    {status}
                   </Option>
-                )
-              )}
-            </Select>
+                ))}
+              </Select>
+            )}
           </Col>
         </Row>
+
+        {orderDetails.status === "Đã hủy" && (
+          <>
+            <Divider />
+            <Descriptions title="Thông tin hủy đơn" bordered column={1}>
+              <Descriptions.Item label="Lý do hủy">
+                {orderDetails.cancelReason || "Không có"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Người hủy">
+                {orderDetails.canceledBy || "Không xác định"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày hủy">
+                {orderDetails.cancelDate
+                  ? new Date(orderDetails.cancelDate).toLocaleString()
+                  : "Không xác định"}
+              </Descriptions.Item>
+            </Descriptions>
+          </>
+        )}
       </Card>
+
+      {/* Modal nhập lý do hủy */}
+      <Modal
+        title="Nhập lý do hủy đơn"
+        open={isCancelModalVisible}
+        onOk={handleConfirmCancel}
+        onCancel={() => {
+          setIsCancelModalVisible(false);
+          setCancelReason("");
+          setSelectedStatus(null);
+        }}
+        okText="Xác nhận hủy"
+        cancelText="Đóng"
+      >
+        <Input.TextArea
+          rows={4}
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+          placeholder="Nhập lý do bạn muốn hủy đơn hàng..."
+        />
+      </Modal>
     </div>
   );
 };

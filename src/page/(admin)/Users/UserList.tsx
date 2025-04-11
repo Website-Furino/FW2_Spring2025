@@ -1,24 +1,28 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spin, Alert } from "antd";
-
+interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  role: "admin" | "user";
+}
 const UserList = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/users")
+      .get<User[]>("http://localhost:3000/users")
       .then((response) => {
-        // Lọc chỉ những người dùng có role là 'user'
         const filteredUsers = response.data.filter(
           (user) => user.role === "user"
         );
         setUsers(filteredUsers);
         setLoading(false);
       })
-      .catch((error) => {
+      .catch(() => {
         setError("Không thể tải dữ liệu người dùng");
         setLoading(false);
       });
