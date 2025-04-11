@@ -35,18 +35,16 @@ interface Category {
   name: string;
 }
 
-interface Product extends ProductForm {
+interface ProductForm {
   id: number | string;
-}
-
-// ================= COMPONENT =================
+}// ================= COMPONENT =================
 
 function ProductEdit() {
   const { id } = useParams<{ id: string }>();
-  const [form] = Form.useForm<ProductForm>();
-  const { data: categ } = useList<Category>({ resource: "categories" });
-  const { data: product, isLoading } = useOne<Product>({ resource: "products", id });
-  const { mutate } = useUpdate<ProductForm>({ resource: "products", id });
+  const [form] = Form.useForm();
+  const { data: categ } = useList({ resource: "categories" });
+  const { data: product, isLoading } = useOne({ resource: "products", id });
+  const { mutate } = useUpdate({ resource: "products", id });
 
   const [imageUrl, setImageUrl] = useState<string>("");
 
@@ -80,7 +78,7 @@ function ProductEdit() {
 
     return false;
   };
-
+  
   const onFinish = (values: ProductForm) => {
     if (!imageUrl) {
       message.error("Please upload an image.");
@@ -139,7 +137,7 @@ function ProductEdit() {
           rules={[{ required: true, message: "Please select product category!" }]}
         >
           <Select placeholder="Select a category">
-            {categ?.map((cat) => (
+            {categ?.map((cat: Category) => (
               <Option key={cat.id} value={cat.name}>
                 {cat.name}
               </Option>

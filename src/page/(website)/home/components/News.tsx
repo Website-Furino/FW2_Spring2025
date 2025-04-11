@@ -3,23 +3,50 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { notification, Spin } from "antd";
 
+interface Product {
+  id: number|string;
+  name: string;
+  imageUrl: string;
+  price: number;
+  noibat: boolean;
+  createdAt: string;
+  stock: number;
+}
+
+interface CartItem {
+  id: number|string;
+  productId: number|string;
+  name: string;
+  imageUrl: string;
+  price: number;
+  userId: number|string;
+  quantity: number;
+  totalPrice: number;
+}
+
+interface User {
+  id: number|string;
+}
+
 const NewsHome = () => {
-  const [products, setProducts] = useState<any[]>([]);
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetch("http://localhost:3000/products")
       .then((response) => response.json())
-      .then((data) => {
+      .then((data: Product[]) => {
         const sortedProducts = data.sort(
-          (a, b) =>
+          (a: Product, b: Product) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setProducts(sortedProducts.slice(0, 8));
         setLoading(false);
       })
       .catch((error) => {
+        console.log(cartItems);
+        
         console.error("Lỗi khi lấy dữ liệu:", error);
         setLoading(false);
       });
@@ -29,25 +56,25 @@ const NewsHome = () => {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/carts");
+      const res = await axios.get<CartItem[]>("http://localhost:3000/carts");
       setCartItems(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy giỏ hàng:", err);
     }
   };
 
-  const addToCart = async (product: any) => {
+  const addToCart = async (product: Product) => {
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const user = JSON.parse(localStorage.getItem("user") || "{}") as User;
 
-      const res = await axios.get(`http://localhost:3000/products/${product.id}`);
+      const res = await axios.get<Product>(`http://localhost:3000/products/${product.id}`);
       const latestProduct = res.data;
       const stock = latestProduct.stock;
 
       if (user.id) {
-        const cartRes = await axios.get("http://localhost:3000/carts");
-        const userCart = cartRes.data.filter((item: any) => item.userId === user.id);
-        const existingItem = userCart.find((item: any) => item.productId === product.id);
+        const cartRes = await axios.get<CartItem[]>("http://localhost:3000/carts");
+        const userCart = cartRes.data.filter((item: CartItem) => item.userId === user.id);
+        const existingItem = userCart.find((item: CartItem) => item.productId === product.id);
         const currentQty = existingItem?.quantity || 0;
 
         if (currentQty >= stock) {
@@ -65,7 +92,7 @@ const NewsHome = () => {
             totalPrice: (currentQty + 1) * product.price,
           });
         } else {
-          await axios.post("http://localhost:3000/carts", {
+          await axios.post<CartItem>("http://localhost:3000/carts", {
             productId: product.id,
             name: product.name,
             imageUrl: product.imageUrl,
@@ -81,8 +108,8 @@ const NewsHome = () => {
         });
         fetchCart();
       } else {
-        const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-        const existingItem = localCart.find((item: any) => item.id === product.id);
+        const localCart = JSON.parse(localStorage.getItem("cart") || "[]") as CartItem[];
+        const existingItem = localCart.find((item: CartItem) => item.productId === product.id);
         const currentQty = existingItem?.quantity || 0;
 
         if (currentQty >= stock) {
@@ -96,7 +123,16 @@ const NewsHome = () => {
         if (existingItem) {
           existingItem.quantity += 1;
         } else {
-          localCart.push({ ...product, quantity: 1 });
+          localCart.push({
+            productId: product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            price: product.price,
+            quantity: 1,
+            totalPrice: product.price,
+            id: Date.now(),
+            userId: ''
+          });
         }
 
         localStorage.setItem("cart", JSON.stringify(localCart));
@@ -112,7 +148,6 @@ const NewsHome = () => {
       });
     }
   };
-
   return (
     <section className="max-w-7xl mx-auto p-4">
       <h2 className="text-medium text-[40px] border-b border-[#000] mb-[57px] pb-5">

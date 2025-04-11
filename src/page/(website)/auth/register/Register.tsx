@@ -46,14 +46,15 @@ function Register() {
       }
 
       const data = await response.json();
-      message.success("Đăng ký thành công")
-      navigate("/login");
-    } catch (error) {
-      message.error(error?.message || "Đăng ký thất bại!");
-    } finally {
-      setLoading(false);
-    }
-  };
+      console.log(data);
+        message.success("Đăng ký thành công");
+        navigate("/login");
+      } catch (error: any) {
+        message.error(error?.message || "Đăng ký thất bại!");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>

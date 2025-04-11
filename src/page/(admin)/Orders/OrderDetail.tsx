@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -34,6 +34,8 @@ const OrderDetail = () => {
   }, [id]);
 
   const fetchOrderDetails = () => {
+    console.log(selectedStatus);
+    
     setLoading(true);
     axios
       .get(`http://localhost:3000/orders/${id}`)

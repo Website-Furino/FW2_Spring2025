@@ -19,7 +19,7 @@ const Banner = () => {
     return () => clearInterval(interval);
   }, [images.length]);
 
-  const handleDotClick = (index) => {
+  const handleDotClick = (index:any) => {
     setCurrentIndex(index);
   };
 
