@@ -7,25 +7,39 @@ import {
   Button,
   message,
   Row,
-  Col,
-  Select,
   Spin,
   Modal,
   Input,
 } from "antd";
-import {
-  MoneyCollectOutlined,
-  ShoppingCartOutlined,
-  CalendarOutlined,
-} from "@ant-design/icons";
-import { Option } from "antd/es/mentions";
+
+interface CartItem {
+  id: number|string;
+  userId: number|string;
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+}
+
+interface Order {
+  id: number;
+  orderDate: string;
+  status: string;
+  paymentMethod: string;
+  totalPrice: number;
+  cancelReason?: string;
+  canceledBy?: string;
+  cancelDate?: string;
+  cartItems: CartItem[];
+}
 
 const OrderHistory = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [cancelModalVisible, setCancelModalVisible] = useState<boolean>(false);
+  const [cancelReason, setCancelReason] = useState<string>("");
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("token");
 
@@ -41,7 +55,7 @@ const OrderHistory = () => {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
-          const userOrders = response.data.filter((order) =>
+          const userOrders = response.data.filter((order: Order) =>
             order.cartItems.some((item) => item.userId === user.id)
           );
           const ordersSorted = userOrders.reverse();
@@ -60,7 +74,7 @@ const OrderHistory = () => {
     return () => clearInterval(interval);
   }, [user?.id, token]);
 
-  const showCancelModal = (orderId) => {
+  const showCancelModal = (orderId: number) => {
     setSelectedOrderId(orderId);
     setCancelReason("");
     setCancelModalVisible(true);
@@ -88,7 +102,7 @@ const OrderHistory = () => {
       }
 
       // Cập nhật đơn hàng
-      const updatedOrder = {
+      const updatedOrder: Order = {
         ...order,
         status: "Đã hủy",
         cancelReason,
@@ -134,7 +148,7 @@ const OrderHistory = () => {
         itemLayout="vertical"
         size="large"
         dataSource={orders}
-        renderItem={(order) => (
+        renderItem={(order: Order) => (
           <List.Item key={order.id}>
             <Card
               title={`Đơn hàng #${order.id}`}
@@ -159,7 +173,7 @@ const OrderHistory = () => {
                   <>
                     <p><strong>Lý do hủy:</strong> {order.cancelReason}</p>
                     <p><strong>Người hủy:</strong> {order.canceledBy}</p>
-                    <p><strong>Ngày hủy:</strong> {new Date(order.cancelDate).toLocaleString()}</p>
+                    <p><strong>Ngày hủy:</strong> {new Date(order.cancelDate!).toLocaleString()}</p>
                   </>
                 )}
               </div>

@@ -1,4 +1,3 @@
-// ... các import vẫn giữ nguyên như của bạn
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -14,11 +13,6 @@ import {
   notification,
   Image,
 } from "antd";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
 
 const { Title, Text } = Typography;
 
@@ -140,7 +134,7 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="flex items-center justify-center min-h-screen">
         <Spin size="large" />
       </div>
     );
@@ -148,55 +142,49 @@ const ProductDetail = () => {
 
   if (error) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <h3>{error}</h3>
+      <div className="flex items-center justify-center min-h-screen">
+        <h3 className="text-red-500">{error}</h3>
       </div>
     );
   }
 
   if (!product) {
-    return <div>Không tìm thấy sản phẩm</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <h3 className="text-gray-500">Không tìm thấy sản phẩm</h3>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: "40px" }}>
-      <Row gutter={32}>
-        <Col span={12} style={{ textAlign: "center" }}>
+    <div className="container mx-auto px-4 py-8">
+      <Row gutter={[32, 32]} className="mb-12">
+        <Col xs={24} md={12}>
           <Card
             hoverable
+            className="overflow-hidden rounded-lg shadow-lg"
             cover={
               <Image
                 alt={product.name}
                 src={product.imageUrl}
-                style={{ width: "100%", height: "auto" }}
+                className="object-cover w-full"
               />
             }
-            style={{
-              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-              borderRadius: "10px",
-            }}
           />
         </Col>
-
-        <Col span={12}>
-          <Card
-            bordered={false}
-            bodyStyle={{ padding: "24px" }}
-            style={{
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-              borderRadius: "10px",
-            }}
-          >
-            <Title level={2}>{product.name}</Title>
-            <Text strong style={{ fontSize: "24px", color: "#CA8A04" }}>
+        <Col xs={24} md={12}>
+          <Card className="rounded-lg shadow-md">
+            <Title level={2} className="mb-4">
+              {product.name}
+            </Title>
+            <Text className="text-2xl font-bold text-yellow-600 block mb-6">
               {product.price.toLocaleString()} VND
             </Text>
-
             <Descriptions
               title="Thông tin chi tiết sản phẩm"
               bordered
               column={1}
-              style={{ marginTop: "20px" }}
+              className="mb-6"
             >
               <Descriptions.Item label="Kích thước">
                 {product.size}
@@ -211,104 +199,74 @@ const ProductDetail = () => {
                 {product.categoryName}
               </Descriptions.Item>
             </Descriptions>
-
-            <div style={{ marginTop: "20px" }}>
-              <Text>Số lượng:</Text>
+            <div className="mb-6">
+              <Text className="block mb-2">Số lượng:</Text>
               <InputNumber
                 min={1}
                 max={product.stock}
                 value={quantity}
                 onChange={(value) => setQuantity(value || 1)}
-                style={{ width: "100%", marginTop: "10px" }}
+                className="w-full"
               />
             </div>
-
-            <div style={{ marginTop: "30px" }}>
-              <Button
-                type="primary"
-                style={{
-                  width: "100%",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  padding: "14px",
-                  borderRadius: "5px",
-                  backgroundColor: "#CA8A04",
-                  borderColor: "#CA8A04",
-                }}
-                size="large"
-                onClick={handleAddToCart}
-              >
-                Thêm vào giỏ hàng
-              </Button>
-            </div>
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleAddToCart}
+              className="w-full h-12 text-lg font-bold bg-yellow-600 hover:bg-yellow-700 border-yellow-600 hover:border-yellow-700"
+            >
+              Thêm vào giỏ hàng
+            </Button>
           </Card>
         </Col>
       </Row>
 
-      <div style={{ marginTop: "50px" }}>
-        <Title level={3}>Sản phẩm liên quan</Title>
-        <Swiper
-          modules={[Navigation, Autoplay, Pagination]}
-          slidesPerView={1}
-          spaceBetween={10}
-          loop={true}
-          autoplay={{ delay: 2500, disableOnInteraction: false }}
-          navigation={true}
-          pagination={{ clickable: true }}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            1024: { slidesPerView: 4 },
-          }}
-          className="w-full mx-auto"
-        >
+      <div className="mt-12">
+        <Title level={3} className="mb-6">
+          Sản phẩm liên quan
+        </Title>
+        <Row gutter={[16, 16]}>
           {relatedProducts.map((product) => (
-            <SwiperSlide key={product.id}>
-              <div className="bg-[#F4F5F7]">
-                <div className="relative group h-80 overflow-hidden">
+            <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+              <div className="bg-gray-50 rounded-lg overflow-hidden shadow-md">
+                <div className="relative group h-80">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover transition duration-300 group-hover:opacity-70"
+                    className="w-full h-full object-cover transition duration-300 group-hover:opacity-75"
                   />
                   {product.noibat && (
-                    <span className="absolute top-4 left-4 bg-yellow-500 text-white font-medium px-2 py-1 rounded-full">
+                    <span className="absolute top-4 left-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                       Nổi bật
                     </span>
                   )}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 bg-black bg-opacity-50">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50">
                     <button
-                      className="bg-white text-yellow-600 font-semibold py-3 px-11 mb-2"
-                      onClick={() => {
-                        navigate(`/shop/${product.id}`);
-                      }}
+                      className="bg-white text-yellow-600 font-semibold py-3 px-6 rounded-md transform hover:scale-105 transition-transform"
+                      onClick={() => navigate(`/shop/${product.id}`)}
                     >
                       Xem chi tiết
                     </button>
                   </div>
                 </div>
-                <div className="mt-3 bg-[#F4F5F7] pt-4 pl-4 pb-8">
-                  <h3 className="font-semibold text-2xl mb-2">
-                    <Link
-                      to={`/shop/${product.id}`}
-                      className="hover:text-yellow-600"
-                    >
-                      {product.name.length > 20
-                        ? `${product.name.substring(0, 20)}...`
-                        : product.name}
-                    </Link>
-                  </h3>
-                  <div className="text-[#3a3a3a] font-semibold">
-                    <span className="mr-3">
-                      {product.price.toLocaleString()}
-                      <sup>đ</sup>
-                    </span>
+                <div className="p-4">
+                  <Link
+                    to={`/shop/${product.id}`}
+                    className="block text-xl font-semibold mb-2 hover:text-yellow-600 transition-colors"
+                  >
+                    {product.name.length > 20
+                      ? `${product.name.substring(0, 20)}...`
+                      : product.name}
+                  </Link>
+                  <div className="text-yellow-600 font-semibold">
+                    {product.price.toLocaleString()}
+                    <sup>đ</sup>
                   </div>
                 </div>
               </div>
-            </SwiperSlide>
+            </Col>
           ))}
-        </Swiper>
+        </Row>
       </div>
     </div>
   );

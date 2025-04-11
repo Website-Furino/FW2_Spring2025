@@ -2,38 +2,66 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { message, notification } from "antd";
 import axios from "axios";
 
+interface Product {
+  id: number | string;
+  name: string;
+  imageUrl: string;
+  price: number;
+  stock: number;
+}
+
+interface CartItem {
+  id?: number | string;
+  productId: number|string;
+  name: string;
+  imageUrl: string;
+  price: number;
+  userId: number|string;
+  quantity: number;
+  totalPrice: number;
+}
+
+interface Order {
+  status: string;
+  cartItems: {
+    name: string;
+    quantity: number;
+  }[];
+}
+
+interface User {
+  id: number|string;
+}
+
 const TopSellerPage = () => {
-  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<Product[]>([]);
   const nav = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const productsRes = await axios.get("http://localhost:3000/products");
-        const products = productsRes.data;
+        const products: Product[] = productsRes.data;
 
-        const productsMap: { [key: string]: any } = {};
-        products.forEach((p: any) => {
+        const productsMap: { [key: string]: Product } = {};
+        products.forEach((p: Product) => {
           productsMap[p.name] = p;
         });
 
         const ordersRes = await axios.get("http://localhost:3000/orders");
-        const orders = ordersRes.data;
+        const orders: Order[] = ordersRes.data;
 
         const successfulOrders = orders.filter(
-          (order) => order.status === "Đã giao thành công"
+          (order: Order) => order.status === "Đã giao thành công"
         );
 
-        const productSalesMap: { [key: string]: any } = {};
+        const productSalesMap: { [key: string]: Product & { quantity: number } } = {};
 
-        successfulOrders.forEach((order) => {
-          order.cartItems.forEach((item: any) => {
+        successfulOrders.forEach((order: Order) => {
+          order.cartItems.forEach((item: { name: string; quantity: number }) => {
             const productDetails = productsMap[item.name];
             if (productDetails) {
               if (productSalesMap[item.name]) {
@@ -51,7 +79,7 @@ const TopSellerPage = () => {
         const productSales = Object.values(productSalesMap);
         setTopProducts(
           productSales
-            .sort((a: any, b: any) => b.quantity - a.quantity)
+            .sort((a, b) => b.quantity - a.quantity)
             .slice(0, 5)
         );
       } catch (err) {
@@ -62,8 +90,8 @@ const TopSellerPage = () => {
     fetchData();
   }, []);
 
-  const addToCart = async (product: any) => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const addToCart = async (product: Product) => {
+    const user: User = JSON.parse(localStorage.getItem("user") || "{}");
 
     if (!user.id) {
       notification.error({
@@ -78,7 +106,7 @@ const TopSellerPage = () => {
       const res = await axios.get(
         `http://localhost:3000/products/${product.id}`
       );
-      const latestProduct = res.data;
+      const latestProduct: Product = res.data;
 
       if (latestProduct.stock <= 0) {
         notification.error({
@@ -89,11 +117,11 @@ const TopSellerPage = () => {
       }
 
       const cartRes = await axios.get("http://localhost:3000/carts");
-      const userCart = cartRes.data.filter(
-        (item: any) => item.userId === user.id
+      const userCart: CartItem[] = cartRes.data.filter(
+        (item: CartItem) => item.userId === user.id
       );
       const existingItem = userCart.find(
-        (item: any) => item.productId === product.id
+        (item: CartItem) => item.productId === product.id
       );
       const existingQty = existingItem ? existingItem.quantity : 0;
 
@@ -114,7 +142,7 @@ const TopSellerPage = () => {
           totalPrice: (existingItem.quantity + 1) * product.price,
         });
       } else {
-        const newCartItem = {
+        const newCartItem: CartItem = {
           productId: product.id,
           name: product.name,
           imageUrl: product.imageUrl,
