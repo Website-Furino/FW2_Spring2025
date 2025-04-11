@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Col, message,Pagination, notification, Row } from "antd";
+import { Col, message, Pagination, notification, Row, Input, Select } from "antd";
 import axios from "axios";
 
 const ShopPage = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8); // Số sản phẩm trên mỗi trang
+  const [pageSize, setPageSize] = useState(16);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const nav = useNavigate();
 
   const fetchProducts = async () => {
     try {
       const res = await axios.get("http://localhost:3000/products");
-
       setProducts(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy sản phẩm:", err);
@@ -91,33 +89,68 @@ const ShopPage = () => {
       }
 
       message.success("Đã thêm vào giỏ hàng!");
-      fetchCart(); // cập nhật lại số lượng hiển thị
+      fetchCart();
     } catch (err) {
       console.error("Lỗi khi thêm vào giỏ hàng:", err);
       message.error("Không thể thêm vào giỏ hàng.");
     }
   };
 
-  const getRemainingStock = (product: any) => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const userItem = cartItems.find(
-      (item: any) => item.userId === user.id && item.productId === product.id
-    );
-    return product.stock - (userItem?.quantity || 0);
-  };
-  // Xử lý phân trang
   const handlePageChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
     setPageSize(pageSize);
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setCurrentPage(1);
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory
+      ? product.categoryName.toLowerCase() === selectedCategory.toLowerCase()
+      : true;
+    return matchesSearch && matchesCategory;
+  });
+
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProducts = products.slice(startIndex, startIndex + pageSize);
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + pageSize);
+
   return (
     <section className="max-w-7xl mx-auto p-4">
       <h2 className="text-medium text-[40px] border-b border-[#000] mb-[57px] pb-5">
         Tất cả sản phẩm
       </h2>
+
+      <div className="mb-4 flex gap-4">
+        <Input
+          placeholder="Tìm kiếm sản phẩm..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="max-w-xs"
+        />
+        <Select
+          placeholder="Chọn danh mục"
+          onChange={handleCategoryChange}
+          value={selectedCategory}
+          className="min-w-[200px]"
+          allowClear
+        >
+          {[...new Set(products.map((product) => product.categoryName))].map(
+            (category) => (
+              <Select.Option key={category} value={category}>
+                {category}
+              </Select.Option>
+            )
+          )}
+        </Select>
+      </div>
 
       <Row gutter={[16, 16]}>
         {paginatedProducts.map((product) => (
@@ -183,7 +216,7 @@ const ShopPage = () => {
         <Pagination
           current={currentPage}
           pageSize={pageSize}
-          total={products.length}
+          total={filteredProducts.length}
           onChange={handlePageChange}
           showSizeChanger
           pageSizeOptions={["8", "16", "24"]}
