@@ -10,7 +10,7 @@ type CategoryForm = {
 function CategoryEdit() {
   const { id } = useParams();
   const [form] = Form.useForm();
-  const { data: category, isLoading } = useOne({ resource: "categories", id });
+  const { data: category } = useOne({ resource: "categories", id });
   const { mutate } = useUpdate({ resource: "categories", id });
 
   useEffect(() => {
