@@ -32,6 +32,9 @@ interface Order {
   canceledBy?: string;
   cancelDate?: string;
   cartItems: CartItem[];
+  userInfo: {
+    address: string;
+  };
 }
 
 const OrderHistory = () => {

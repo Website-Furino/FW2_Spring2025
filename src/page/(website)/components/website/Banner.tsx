@@ -17,7 +17,8 @@ const Banner = () => {
       try {
         const response = await fetch('https://json-server-online-8kf1.onrender.com/banners');
         const data = await response.json();
-        setBanners(data);
+
+        setBanners(data.filter((banner: Banner) => banner.active === true));
       } catch (error) {
         console.error('Error fetching banners:', error);
       }
