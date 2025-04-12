@@ -8,7 +8,7 @@ const HomePage = () => {
   return (
     <div>
       <Banner />
-      <main className="w-[1280px] mx-auto mt-11">
+      <main className="max-w-[1280px] w-full mx-auto mt-11 px-4 md:px-6 lg:px-8">
         <TopSellerPage />
         <NewsHome />
         <NoiBat />

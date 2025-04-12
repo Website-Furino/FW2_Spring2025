@@ -7,6 +7,8 @@ import {
   Upload,
   message,
   Image,
+  Row,
+  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useCreate } from "../../../hooks";
@@ -59,54 +61,62 @@ function BannerAdd() {
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 30,
-        marginTop: 30,
+        padding: "20px",
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "0 auto",
       }}
     >
-      <h2>Add New Banner</h2>
-      <Form onFinish={onFinish} layout="vertical">
-        <Form.Item
-          label="Banner Title"
-          name="title"
-          rules={[{ required: true, message: "Please input banner title!" }]}
-        >
-          <Input />
-        </Form.Item>
+      <Row>
+        <Col xs={24}>
+          <h2>Add New Banner</h2>
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={24} sm={24} md={20} lg={16} xl={14}>
+          <Form onFinish={onFinish} layout="vertical" style={{ marginTop: "20px" }}>
+            <Form.Item
+              label="Banner Title"
+              name="title"
+              rules={[{ required: true, message: "Please input banner title!" }]}
+            >
+              <Input />
+            </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name="description"
-          rules={[{ required: true, message: "Please input description!" }]}
-        >
-          <Input.TextArea />
-        </Form.Item>
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[{ required: true, message: "Please input description!" }]}
+            >
+              <Input.TextArea />
+            </Form.Item>
 
-        <Form.Item
-          label="Banner Image"
-          name="imageUrl"
-          rules={[{ required: true, message: "Please upload image!" }]}
-        >
-          <Upload beforeUpload={handleUploadChange} showUploadList={false}>
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-          </Upload>
-        </Form.Item>
+            <Form.Item
+              label="Banner Image"
+              name="imageUrl"
+              rules={[{ required: true, message: "Please upload image!" }]}
+            >
+              <Upload beforeUpload={handleUploadChange} showUploadList={false}>
+                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+              </Upload>
+            </Form.Item>
 
-        {previewVisible && imageUrl && (
-          <Form.Item label="Preview Image">
-            <Image width={100} src={imageUrl} />
-          </Form.Item>
-        )}
+            {previewVisible && imageUrl && (
+              <Form.Item label="Preview Image">
+                <Image width="100%" style={{ maxWidth: "300px" }} src={imageUrl} />
+              </Form.Item>
+            )}
 
-        <Form.Item label="Active" name="active" valuePropName="checked">
-          <Switch />
-        </Form.Item>
+            <Form.Item label="Active" name="active" valuePropName="checked">
+              <Switch />
+            </Form.Item>
 
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form>
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form>
+        </Col>
+      </Row>
     </div>
   );
 }

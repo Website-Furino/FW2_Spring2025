@@ -12,7 +12,7 @@ function CategoryList() {
       dataIndex: "id",
       key: "id",
       render: (_: any, __: any, index: number) => {
-        return index + 1;
+        return index + 1; // index bắt đầu từ 0, nên cộng thêm 1 để bắt đầu từ 1
       },
     },
     {

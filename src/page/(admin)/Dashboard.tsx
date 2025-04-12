@@ -223,8 +223,8 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: "24px" }}>
-      <Row gutter={24} style={{ marginBottom: 24 }}>
-        <Col span={8}>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} sm={24} md={8}>
           <Select
             defaultValue="day"
             style={{ width: "100%" }}
@@ -239,8 +239,8 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={24}>
-        <Col span={8}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} sm={24} md={12} lg={8}>
           <Card>
             <Statistic
               title="Tổng Doanh Thu"
@@ -255,15 +255,15 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={24} md={12} lg={8}>
           <Card>
             <Statistic title="Số Đơn Hàng" value={orderData.length || 0} />
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={24} style={{ marginTop: 24 }}>
-        <Col span={24}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24}>
           <Card
             title={`Doanh Thu ${
               filterType === "day"
@@ -282,6 +282,7 @@ const Dashboard = () => {
                     ? monthlySalesData()
                     : yearlySalesData()
                 }
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -295,13 +296,14 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={24} style={{ marginTop: 24 }}>
-        <Col span={24}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24}>
           <Card title="Sản Phẩm Bán Chạy">
             <Table
               columns={productColumns}
               dataSource={topProducts}
               rowKey="key"
+              scroll={{ x: true }}
             />
           </Card>
         </Col>

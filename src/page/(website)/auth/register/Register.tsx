@@ -57,13 +57,13 @@ function Register() {
     };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
-      <Card style={{ width: 600, padding: 20 }}>
+    <div style={{ display: "flex", justifyContent: "center", marginTop: 50, padding: "0 16px" }}>
+      <Card style={{ width: "100%", maxWidth: 600, padding: "20px 16px" }}>
         <h2 style={{ textAlign: "center", marginBottom: 20 }}>Register</h2>
         <Form onFinish={onFinish} layout="vertical">
-          <Row gutter={16}>
+          <Row gutter={[16, 0]}>
             {/* Left Column */}
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Full Name"
                 name="fullName"
@@ -99,7 +99,7 @@ function Register() {
             </Col>
 
             {/* Right Column */}
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Address"
                 name="address"
@@ -154,9 +154,11 @@ function Register() {
             justifyContent: "center",
             alignItems: "center",
             marginTop: 20,
+            flexWrap: "wrap",
+            gap: 10,
           }}
         >
-          <span style={{ marginRight: 10 }}>Đã có tài khoản?</span>
+          <span>Đã có tài khoản?</span>
           <Link to="/login">
             <Button type="link" style={{ padding: 0 }}>
               Đăng nhập ngay

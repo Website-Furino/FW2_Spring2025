@@ -31,10 +31,19 @@ function CategoryEdit() {
         flexDirection: "column",
         gap: 30,
         marginTop: 30,
+        padding: "0 16px",
+        maxWidth: "1200px",
+        margin: "30px auto",
+        width: "100%"
       }}
     >
       <h2>Edit New Category</h2>
-      <Form onFinish={onFinish} form={form}>
+      <Form 
+        onFinish={onFinish} 
+        form={form}
+        layout="vertical"
+        style={{ width: "100%", maxWidth: "600px" }}
+      >
         <Form.Item
           label="Category Name"
           name="name"

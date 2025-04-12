@@ -20,10 +20,16 @@ function CategoryAdd() {
         flexDirection: "column",
         gap: 30,
         marginTop: 30,
+        padding: "0 20px",
+        maxWidth: "100%",
       }}
     >
       <h2>Add New Category</h2>
-      <Form onFinish={onFinish}>
+      <Form
+        onFinish={onFinish}
+        layout="vertical"
+        style={{ width: "100%", maxWidth: 600 }}
+      >
         <Form.Item
           label="Category Name"
           name="name"

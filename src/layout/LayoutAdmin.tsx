@@ -2,13 +2,16 @@ import { Outlet } from "react-router-dom";
 import HeaderMenu from "../page/(admin)/components/Header";
 import SideMenu from "../page/(admin)/components/Side";
 import { Layout, theme } from "antd";
+import { useState } from "react";
 
 const { Header, Content, Sider } = Layout;
 
 const LayoutAdmin = () => {
+  const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  console.log(collapsed);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -28,12 +31,30 @@ const LayoutAdmin = () => {
       {/* Main Layout */}
       <Layout>
         {/* Sidebar */}
-        <Sider width={200} style={{ background: colorBgContainer }}>
+        <Sider
+          width={200}
+          style={{ background: colorBgContainer }}
+          breakpoint="lg"
+          collapsedWidth="0"
+          onBreakpoint={(broken) => {
+            setCollapsed(broken);
+          }}
+          onCollapse={(collapsed, type) => {
+            setCollapsed(collapsed);
+            console.log(type);
+            
+          }}
+        >
           <SideMenu />
         </Sider>
 
         {/* Content */}
-        <Layout style={{ padding: "0 24px 24px", flexDirection: "column" }}>
+        <Layout
+          style={{
+            padding: "0 24px 24px",
+            flexDirection: "column",
+          }}
+        >
           <Content
             style={{
               padding: 24,

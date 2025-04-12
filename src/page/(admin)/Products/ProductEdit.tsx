@@ -9,6 +9,8 @@ import {
   message,
   Image,
   Select,
+  Row,
+  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
@@ -37,7 +39,9 @@ interface Category {
 
 interface ProductForm {
   id: number | string;
-}// ================= COMPONENT =================
+}
+
+// ================= COMPONENT =================
 
 function ProductEdit() {
   const { id } = useParams<{ id: string }>();
@@ -99,91 +103,108 @@ function ProductEdit() {
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 30,
-        marginTop: 30,
+        padding: "20px",
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "0 auto",
       }}
     >
       <h2>Edit Product</h2>
-      <Form form={form} onFinish={onFinish} layout="vertical">
-        <Form.Item
-          label="Product Name"
-          name="name"
-          rules={[{ required: true, message: "Please input product name!" }]}
-        >
-          <Input />
-        </Form.Item>
+      <Form
+        form={form}
+        onFinish={onFinish}
+        layout="vertical"
+        style={{ width: "100%" }}
+      >
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Product Name"
+              name="name"
+              rules={[{ required: true, message: "Please input product name!" }]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Original Price"
+              name="price"
+              rules={[{ required: true, message: "Please input product price!" }]}
+            >
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Stock"
+              name="stock"
+              rules={[{ required: true, message: "Please input stock quantity!" }]}
+            >
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Category"
+              name="categoryName"
+              rules={[{ required: true, message: "Please select product category!" }]}
+            >
+              <Select placeholder="Select a category">
+                {categ?.map((cat: Category) => (
+                  <Option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Size"
+              name="size"
+              rules={[{ required: true, message: "Please input product size!" }]}
+            >
+              <Input placeholder="D1600 - R800 - C800 mm" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item
+              label="Material"
+              name="material"
+              rules={[{ required: true, message: "Please input product material!" }]}
+            >
+              <Input placeholder="Khung gỗ bọc vải" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item label="Product Image" name="imageUrl">
+              <Upload
+                beforeUpload={handleUploadChange}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+              </Upload>
+            </Form.Item>
 
-        <Form.Item
-          label="Original Price"
-          name="price"
-          rules={[{ required: true, message: "Please input product price!" }]}
-        >
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item
-          label="Stock"
-          name="stock"
-          rules={[{ required: true, message: "Please input stock quantity!" }]}
-        >
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item
-          label="Category"
-          name="categoryName"
-          rules={[{ required: true, message: "Please select product category!" }]}
-        >
-          <Select placeholder="Select a category">
-            {categ?.map((cat: Category) => (
-              <Option key={cat.id} value={cat.name}>
-                {cat.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          label="Size"
-          name="size"
-          rules={[{ required: true, message: "Please input product size!" }]}
-        >
-          <Input placeholder="D1600 - R800 - C800 mm" />
-        </Form.Item>
-
-        <Form.Item
-          label="Material"
-          name="material"
-          rules={[{ required: true, message: "Please input product material!" }]}
-        >
-          <Input placeholder="Khung gỗ bọc vải" />
-        </Form.Item>
-
-        <Form.Item label="Product Image" name="imageUrl">
-          <Upload
-            beforeUpload={handleUploadChange}
-            showUploadList={false}
-            accept="image/*"
-          >
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-          </Upload>
-        </Form.Item>
-
-        {imageUrl && (
-          <Form.Item label="Preview Image">
-            <Image width={100} src={imageUrl} />
-          </Form.Item>
-        )}
-
-        <Form.Item label="Highlight" name="noibat" valuePropName="checked">
-          <Switch />
-        </Form.Item>
-
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
+            {imageUrl && (
+              <Form.Item label="Preview Image">
+                <Image width={100} src={imageUrl} />
+              </Form.Item>
+            )}
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12}>
+            <Form.Item label="Highlight" name="noibat" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          </Col>
+          <Col xs={24}>
+            <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
+              Submit
+            </Button>
+          </Col>
+        </Row>
       </Form>
     </div>
   );

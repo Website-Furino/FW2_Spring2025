@@ -164,18 +164,18 @@ const CheckoutPage = () => {
   return (
     <div
       className="checkout-container"
-      style={{ maxWidth: "1200px", margin: "0 auto", paddingTop: "50px" }}
+      style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}
     >
-      <Title level={3} className="text-center mb-30">
+      <Title level={3} className="text-center mb-30" style={{ textAlign: "center", marginBottom: "30px" }}>
         Thông tin thanh toán
       </Title>
 
-      <Row gutter={24}>
-        <Col span={12}>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} sm={24} md={24} lg={12}>
           <Card
             title="Thông tin người dùng"
             bordered={false}
-            style={{ boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)" }}
+            style={{ boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)", marginBottom: "20px" }}
           >
             <Form layout="vertical" hideRequiredMark>
               <Form.Item label="Họ và tên">
@@ -264,16 +264,16 @@ const CheckoutPage = () => {
           </Card>
         </Col>
 
-        <Col span={12}>
+        <Col xs={24} sm={24} md={24} lg={12}>
           <Card
             title="Giỏ hàng"
             bordered={false}
             style={{ boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)" }}
           >
-            <div>
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
               {cartItems.length > 0 ? (
                 cartItems.map((item) => (
-                  <div key={item.id}>
+                  <div key={item.id} style={{ marginBottom: "10px" }}>
                     <Row gutter={16}>
                       <Col span={16}>
                         <Text>{item.name}</Text>
@@ -313,6 +313,7 @@ const CheckoutPage = () => {
               <Radio.Group
                 value={paymentMethod}
                 onChange={handlePaymentMethodChange}
+                style={{ display: "flex", flexDirection: "column", gap: "10px" }}
               >
                 <Radio value="COD">
                   <IdcardOutlined /> Thanh toán khi nhận hàng (COD)

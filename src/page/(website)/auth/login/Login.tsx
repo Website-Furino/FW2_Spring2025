@@ -8,9 +8,9 @@ const Login = () => {
     mutate(values);
   };
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
-      <Card style={{ width: 400, padding: 20 }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>Đăng nhập</h2>
+    <div style={{ display: "flex", justifyContent: "center", marginTop: 50, padding: "0 16px" }}>
+      <Card style={{ width: "100%", maxWidth: 400, padding: "20px" }}>
+        <h2 style={{ textAlign: "center", marginBottom: 20, fontSize: "clamp(1.5rem, 4vw, 2rem)" }}>Đăng nhập</h2>
         <Form onFinish={onFinish} layout="vertical">
           <Form.Item
             label="Email"
@@ -37,12 +37,14 @@ const Login = () => {
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             marginTop: 20,
+            gap: 10,
           }}
         >
-          <span style={{ marginRight: 10 }}>Chưa có tài khoản?</span>
+          <span>Chưa có tài khoản?</span>
           <Link to="/register">
             <Button type="link" style={{ padding: 0 }}>
               Đăng ký ngay

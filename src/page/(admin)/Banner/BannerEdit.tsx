@@ -7,6 +7,8 @@ import {
   Upload,
   message,
   Image,
+  Row,
+  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
@@ -79,54 +81,69 @@ function BannerEdit() {
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 30,
-        marginTop: 30,
+        padding: "20px",
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "0 auto",
       }}
     >
-      <h2>Edit Banner</h2>
-      <Form form={form} onFinish={onFinish} layout="vertical">
-        <Form.Item
-          label="Banner Title"
-          name="title"
-          rules={[{ required: true, message: "Please input banner title!" }]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="Banner Description"
-          name="description"
-          rules={[{ required: true, message: "Please input banner description!" }]}
-        >
-          <Input.TextArea />
-        </Form.Item>
-
-        <Form.Item label="Banner Image" name="imageUrl">
-          <Upload
-            beforeUpload={handleUploadChange}
-            showUploadList={false}
-            accept="image/*"
+      <Row>
+        <Col xs={24}>
+          <h2>Edit Banner</h2>
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={24} sm={24} md={20} lg={16} xl={14}>
+          <Form
+            form={form}
+            onFinish={onFinish}
+            layout="vertical"
+            style={{ marginTop: "20px" }}
           >
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-          </Upload>
-        </Form.Item>
+            <Form.Item
+              label="Banner Title"
+              name="title"
+              rules={[{ required: true, message: "Please input banner title!" }]}
+            >
+              <Input />
+            </Form.Item>
 
-        {imageUrl && (
-          <Form.Item label="Preview Image">
-            <Image width={100} src={imageUrl} />
-          </Form.Item>
-        )}
+            <Form.Item
+              label="Banner Description"
+              name="description"
+              rules={[{ required: true, message: "Please input banner description!" }]}
+            >
+              <Input.TextArea />
+            </Form.Item>
 
-        <Form.Item label="Active" name="active" valuePropName="checked">
-          <Switch />
-        </Form.Item>
+            <Form.Item label="Banner Image" name="imageUrl">
+              <Upload
+                beforeUpload={handleUploadChange}
+                showUploadList={false}
+                accept="image/*"
+              >
+                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+              </Upload>
+            </Form.Item>
 
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form>
+            {imageUrl && (
+              <Form.Item label="Preview Image">
+                <Image width="100%" style={{ maxWidth: "300px" }} src={imageUrl} />
+              </Form.Item>
+            )}
+
+            <Form.Item label="Active" name="active" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
+        </Col>
+      </Row>
     </div>
   );
 }

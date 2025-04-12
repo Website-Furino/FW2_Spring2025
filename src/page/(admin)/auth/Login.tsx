@@ -30,8 +30,22 @@ const LoginAdmin = () => {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto", paddingTop: "100px" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+    <div
+      style={{
+        width: "90%",
+        maxWidth: "400px",
+        margin: "0 auto",
+        paddingTop: "clamp(50px, 10vh, 100px)",
+        padding: "20px"
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          marginBottom: "20px",
+          fontSize: "clamp(1.5rem, 4vw, 2rem)"
+        }}
+      >
         Đăng nhập Admin
       </h2>
       <Form
@@ -40,13 +54,14 @@ const LoginAdmin = () => {
         onFinish={handleLogin}
         initialValues={{ remember: true }}
         layout="vertical"
+        style={{ width: "100%" }}
       >
         <Form.Item
           label="Email"
           name="email"
           rules={[{ required: true, message: "Vui lòng nhập email!" }]}
         >
-          <Input />
+          <Input size="large" />
         </Form.Item>
 
         <Form.Item
@@ -54,7 +69,7 @@ const LoginAdmin = () => {
           name="password"
           rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
         >
-          <Input.Password />
+          <Input.Password size="large" />
         </Form.Item>
 
         <Form.Item name="remember" valuePropName="checked">
@@ -67,7 +82,14 @@ const LoginAdmin = () => {
             htmlType="submit"
             block
             loading={loading}
-            style={{ backgroundColor: "#1890ff", borderColor: "#1890ff" }}
+            size="large"
+            style={{
+              backgroundColor: "#1890ff",
+              borderColor: "#1890ff",
+              height: "auto",
+              padding: "8px 16px",
+              fontSize: "16px"
+            }}
           >
             {loading ? <Spin /> : "Đăng nhập"}
           </Button>
