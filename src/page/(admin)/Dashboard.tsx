@@ -55,7 +55,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/orders");
+        const response = await axios.get("https://json-server-online-8kf1.onrender.com/orders");
         const data: Order[] = response.data;
         setOrderData(data);
 

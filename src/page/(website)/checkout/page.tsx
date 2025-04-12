@@ -51,7 +51,7 @@ const CheckoutPage = () => {
       });
 
       axios
-        .get(`http://localhost:3000/carts?userID=${user.id}`)
+        .get(`https://json-server-online-8kf1.onrender.com/carts?userID=${user.id}`)
         .then((response) => {
           setCartItems(response.data);
         })
@@ -135,13 +135,13 @@ const CheckoutPage = () => {
     };
 
     axios
-      .post("http://localhost:3000/orders", orderData)
+      .post("https://json-server-online-8kf1.onrender.com/orders", orderData)
       .then(() => {
         message.success("Đặt hàng thành công!");
 
         cartItems.forEach((item) => {
           axios
-            .delete(`http://localhost:3000/carts/${item.id}`)
+            .delete(`https://json-server-online-8kf1.onrender.com/carts/${item.id}`)
             .then(() => {
               setCartItems((prev) =>
                 prev.filter((cartItem) => cartItem.id !== item.id)

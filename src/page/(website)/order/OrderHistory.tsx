@@ -51,7 +51,7 @@ const OrderHistory = () => {
 
     const fetchOrders = () => {
       axios
-        .get(`http://localhost:3000/orders`, {
+        .get(`https://json-server-online-8kf1.onrender.com/orders`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -92,11 +92,11 @@ const OrderHistory = () => {
     try {
       // Cập nhật tồn kho
       for (const item of order.cartItems) {
-        const productRes = await axios.get(`http://localhost:3000/products/${item.productId}`);
+        const productRes = await axios.get(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`);
         const productData = productRes.data;
         const updatedStock = productData.stock + item.quantity;
 
-        await axios.patch(`http://localhost:3000/products/${item.productId}`, {
+        await axios.patch(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`, {
           stock: updatedStock,
         });
       }
@@ -111,7 +111,7 @@ const OrderHistory = () => {
       };
 
       await axios.put(
-        `http://localhost:3000/orders/${selectedOrderId}`,
+        `https://json-server-online-8kf1.onrender.com/orders/${selectedOrderId}`,
         updatedOrder,
         { headers: { Authorization: `Bearer ${token}` } }
       );

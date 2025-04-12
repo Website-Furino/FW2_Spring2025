@@ -11,7 +11,7 @@ const LoginAdmin = () => {
   const handleLogin = (values: any) => {
     setLoading(true);
     axios
-      .post("http://localhost:3000/login", values)
+      .post("https://json-server-online-8kf1.onrender.com/login", values)
       .then((response) => {
         if (response.data.user?.role === "admin") {
           localStorage.setItem("user", JSON.stringify(response.data.user));

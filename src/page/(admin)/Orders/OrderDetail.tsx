@@ -38,7 +38,7 @@ const OrderDetail = () => {
     
     setLoading(true);
     axios
-      .get(`http://localhost:3000/orders/${id}`)
+      .get(`https://json-server-online-8kf1.onrender.com/orders/${id}`)
       .then((response) => {
         setOrderDetails(response.data);
         setLoading(false);
@@ -108,7 +108,7 @@ const OrderDetail = () => {
     try {
       for (const item of orderDetails.cartItems) {
         const productRes = await axios.get(
-          `http://localhost:3000/products/${item.productId}`
+          `https://json-server-online-8kf1.onrender.com/products/${item.productId}`
         );
         const product = productRes.data;
         let updatedStock = product.stock;
@@ -126,12 +126,12 @@ const OrderDetail = () => {
           updatedStock += item.quantity;
         }
 
-        await axios.patch(`http://localhost:3000/products/${item.productId}`, {
+        await axios.patch(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`, {
           stock: updatedStock,
         });
       }
 
-      await axios.patch(`http://localhost:3000/orders/${orderDetails.id}`, {
+      await axios.patch(`https://json-server-online-8kf1.onrender.com/orders/${orderDetails.id}`, {
         status: newStatus,
         cancelReason: newStatus === "Đã hủy" ? cancelReason : undefined,
         canceledBy:

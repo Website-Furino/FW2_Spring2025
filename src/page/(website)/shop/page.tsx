@@ -14,7 +14,7 @@ const ShopPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/products");
+      const res = await axios.get("https://json-server-online-8kf1.onrender.com/products");
       setProducts(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy sản phẩm:", err);
@@ -23,7 +23,7 @@ const ShopPage = () => {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/carts");
+      const res = await axios.get("https://json-server-online-8kf1.onrender.com/carts");
       setCartItems(res.data);
     } catch (err) {
       console.error("Lỗi khi lấy giỏ hàng:", err);
@@ -49,7 +49,7 @@ const ShopPage = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:3000/products/${product.id}`
+        `https://json-server-online-8kf1.onrender.com/products/${product.id}`
       );
       const latestProduct = res.data;
 
@@ -71,13 +71,13 @@ const ShopPage = () => {
       }
 
       if (existingItem) {
-        await axios.put(`http://localhost:3000/carts/${existingItem.id}`, {
+        await axios.put(`https://json-server-online-8kf1.onrender.com/carts/${existingItem.id}`, {
           ...existingItem,
           quantity: existingItem.quantity + 1,
           totalPrice: (existingItem.quantity + 1) * product.price,
         });
       } else {
-        await axios.post("http://localhost:3000/carts", {
+        await axios.post("https://json-server-online-8kf1.onrender.com/carts", {
           productId: product.id,
           name: product.name,
           imageUrl: product.imageUrl,

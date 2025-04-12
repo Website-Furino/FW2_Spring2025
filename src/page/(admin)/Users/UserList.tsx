@@ -14,7 +14,7 @@ const UserList = () => {
 
   useEffect(() => {
     axios
-      .get<User[]>("http://localhost:3000/users")
+      .get<User[]>("https://json-server-online-8kf1.onrender.com/users")
       .then((response) => {
         const filteredUsers = response.data.filter(
           (user) => user.role === "user"

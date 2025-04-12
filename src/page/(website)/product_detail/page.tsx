@@ -27,7 +27,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:3000/products/${id}`)
+      .get(`https://json-server-online-8kf1.onrender.com/products/${id}`)
       .then((response) => {
         setProduct(response.data);
         setLoading(false);
@@ -36,7 +36,7 @@ const ProductDetail = () => {
         if (categoryName) {
           axios
             .get(
-              `http://localhost:3000/products?categoryName=${encodeURIComponent(
+              `https://json-server-online-8kf1.onrender.com/products?categoryName=${encodeURIComponent(
                 categoryName
               )}`
             )
@@ -79,7 +79,7 @@ const ProductDetail = () => {
     }
 
     axios
-      .get(`http://localhost:3000/carts?userId=${user.id}&productId=${product.id}`)
+      .get(`https://json-server-online-8kf1.onrender.com/carts?userId=${user.id}&productId=${product.id}`)
       .then((res) => {
         const existingCartItem = res.data[0];
         const currentQty = existingCartItem ? existingCartItem.quantity : 0;
@@ -97,7 +97,7 @@ const ProductDetail = () => {
 
         if (existingCartItem) {
           axios
-            .patch(`http://localhost:3000/carts/${existingCartItem.id}`, {
+            .patch(`https://json-server-online-8kf1.onrender.com/carts/${existingCartItem.id}`, {
               quantity: totalQty,
             })
             .then(() => {
@@ -116,7 +116,7 @@ const ProductDetail = () => {
             imageUrl: product.imageUrl,
           };
 
-          axios.post("http://localhost:3000/carts", cartItem).then(() => {
+          axios.post("https://json-server-online-8kf1.onrender.com/carts", cartItem).then(() => {
             notification.success({
               message: "Thêm vào giỏ hàng thành công",
               description: `${product.name} đã được thêm vào giỏ hàng.`,
