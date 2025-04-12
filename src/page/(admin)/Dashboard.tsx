@@ -141,9 +141,13 @@ const Dashboard = () => {
     }, {} as { [key: string]: { total: number; count: number } });
   };
 
-  const dailySales = groupByDate(orderData);
-  const monthlySales = groupByMonth(orderData);
-  const yearlySales = groupByYear(orderData);
+  const successfulOrders = orderData.filter(
+    (order) => order.status === "Đã giao thành công"
+  );
+
+  const dailySales = groupByDate(successfulOrders);
+  const monthlySales = groupByMonth(successfulOrders);
+  const yearlySales = groupByYear(successfulOrders);
 
   const dailySalesData = (): SalesData[] => {
     const allDates = createDateList(dayjs("2025-01-01"), dayjs());
@@ -245,7 +249,7 @@ const Dashboard = () => {
             <Statistic
               title="Tổng Doanh Thu"
               value={
-                orderData.reduce(
+                successfulOrders.reduce(
                   (acc, order) => acc + parseFloat(order.totalPrice),
                   0
                 ) || 0
@@ -257,7 +261,7 @@ const Dashboard = () => {
         </Col>
         <Col xs={24} sm={24} md={12} lg={8}>
           <Card>
-            <Statistic title="Số Đơn Hàng" value={orderData.length || 0} />
+            <Statistic title="Số Đơn Hàng" value={successfulOrders.length || 0} />
           </Card>
         </Col>
       </Row>
