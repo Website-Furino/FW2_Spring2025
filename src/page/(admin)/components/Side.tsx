@@ -23,8 +23,8 @@ const SideMenu = () => {
   return (
     <Menu
       mode="inline"
-      defaultSelectedKeys={["dashboard"]} 
-      defaultOpenKeys={["product-management"]} 
+      defaultSelectedKeys={["dashboard"]}
+      defaultOpenKeys={["product-management"]}
       style={{ height: "100%", borderRight: 0 }}
     >
       {/* Dashboard */}
@@ -33,7 +33,11 @@ const SideMenu = () => {
       </Menu.Item>
 
       {/* Product Management */}
-      <Menu.SubMenu key="product-management" icon={<AppstoreAddOutlined />} title="Product Management">
+      <Menu.SubMenu
+        key="product-management"
+        icon={<AppstoreAddOutlined />}
+        title="Product Management"
+      >
         <Menu.Item key="products">
           <Link to="/admin/products">List Products</Link>
         </Menu.Item>
@@ -41,9 +45,26 @@ const SideMenu = () => {
           <Link to="/admin/products/add">Add Product</Link>
         </Menu.Item>
       </Menu.SubMenu>
+      {/* BannerBanner Management */}
+      <Menu.SubMenu
+        key="Banner-management"
+        icon={<AppstoreAddOutlined />}
+        title="Banner Management"
+      >
+        <Menu.Item key="banners">
+          <Link to="/admin/banners">List banners</Link>
+        </Menu.Item>
+        <Menu.Item key="banner_add">
+          <Link to="/admin/banners/add">Add Banner</Link>
+        </Menu.Item>
+      </Menu.SubMenu>
 
       {/* Categories Management */}
-      <Menu.SubMenu key="categories" icon={<FolderOutlined />} title="Categories Management">
+      <Menu.SubMenu
+        key="categories"
+        icon={<FolderOutlined />}
+        title="Categories Management"
+      >
         <Menu.Item key="categories">
           <Link to="/admin/categories">List Categories</Link>
         </Menu.Item>
@@ -63,7 +84,11 @@ const SideMenu = () => {
       </Menu.Item>
 
       {/* Logout */}
-      <Menu.Item key="logout" icon={<PoweroffOutlined />} onClick={handleLogout}>
+      <Menu.Item
+        key="logout"
+        icon={<PoweroffOutlined />}
+        onClick={handleLogout}
+      >
         <Button type="text" block>
           Logout
         </Button>

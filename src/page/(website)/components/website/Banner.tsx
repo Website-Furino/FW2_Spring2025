@@ -1,39 +1,96 @@
 import { useState, useEffect } from "react";
 
-const Banner = () => {
-  // Danh sách ảnh banner
-  const images = [
-    "./src/./image/slide1.webp",
-    "./src/./image/slide2.webp",
-    "./src/./image/slide3.webp",
-    "./src/./image/slide4.webp",
-  ];
+interface Banner {
+  title: string;
+  description: string;
+  imageUrl: string;
+  active: boolean;
+}
 
+const Banner = () => {
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showControls, setShowControls] = useState(false);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await fetch('https://json-server-online-8kf1.onrender.com/banners');
+        const data = await response.json();
+        setBanners(data);
+      } catch (error) {
+        console.error('Error fetching banners:', error);
+      }
+    };
+
+    fetchBanners();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [banners.length]);
 
-  const handleDotClick = (index:any) => {
+  const handleDotClick = (index: number) => {
     setCurrentIndex(index);
   };
 
+  const handlePrevClick = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? banners.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextClick = () => {
+    setCurrentIndex((prevIndex) => 
+      (prevIndex + 1) % banners.length
+    );
+  };
+
   return (
-    <div className="relative mb-16 w-full">
-      {/* Ảnh Banner */}
-      <img
-        src={images[currentIndex]}
-        alt="Banner"
-        className="w-full h-[600px] object-cover"
-      />
+
+    <div 
+      className="relative mb-16 w-full"
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
+    >
+      {banners.length > 0 && (
+        <>
+          <img
+            src={banners[currentIndex].imageUrl}
+            alt={banners[currentIndex].title}
+            className="w-full h-[600px] object-cover"
+          />
+          <button 
+            onClick={handlePrevClick}
+
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/75 p-2 rounded-full transition-opacity duration-300 ${
+              showControls ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <button 
+            onClick={handleNextClick}
+
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/75 p-2 rounded-full transition-opacity duration-300 ${
+              showControls ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </>
+      )}
 
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {images.map((_, index) => (
+        {banners.map((_, index) => (
           <button
             key={index}
             onClick={() => handleDotClick(index)}

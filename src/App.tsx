@@ -23,6 +23,9 @@ import CategoryAdd from "./page/(admin)/Categories/CategoryAdd";
 import CategoryEdit from "./page/(admin)/Categories/CategoryEdit";
 import LoginAdmin from "./page/(admin)/auth/Login";
 import PrivateRoute from "./page/(admin)/auth/PrivateRoute";
+import BannerAdd from "./page/(admin)/Banner/BannerAdd";
+import BannerList from "./page/(admin)/Banner/BannerList";
+import BannerEdit from "./page/(admin)/Banner/BannerEdit";
 
 function App() {
   const routerConfig = createBrowserRouter([
@@ -74,6 +77,30 @@ function App() {
           element: (
             <PrivateRoute>
               <ProductEdit />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "banners",
+          element: (
+            <PrivateRoute>
+              <BannerList />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "banners/add",
+          element: (
+            <PrivateRoute>
+              <BannerAdd />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: "banners/:id/edit",
+          element: (
+            <PrivateRoute>
+              <BannerEdit />
             </PrivateRoute>
           ),
         },
