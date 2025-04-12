@@ -50,7 +50,7 @@ interface SalesData {
 const Dashboard = () => {
   const [orderData, setOrderData] = useState<Order[]>([]);
   const [topProducts, setTopProducts] = useState<Product[]>([]);
-  const [filterType, setFilterType] = useState<"day" | "month" | "year">("day");
+  const [filterType, setFilterType] = useState<"month" | "year">("month");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,29 +98,6 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const createDateList = (startDate: any, endDate: any) => {
-    let dates: string[] = [];
-    let currentDate = startDate;
-    while (
-      currentDate.isBefore(endDate) ||
-      currentDate.isSame(endDate, "day")
-    ) {
-      dates.push(currentDate.format("YYYY-MM-DD"));
-      currentDate = currentDate.add(1, "day");
-    }
-    return dates;
-  };
-
-  const groupByDate = (orders: Order[]) => {
-    return orders.reduce((result, order) => {
-      const date = dayjs(order.date).format("YYYY-MM-DD");
-      if (!result[date]) result[date] = { total: 0, count: 0 };
-      result[date].total += parseFloat(order.totalPrice);
-      result[date].count += 1;
-      return result;
-    }, {} as { [key: string]: { total: number; count: number } });
-  };
-
   const groupByMonth = (orders: Order[]) => {
     return orders.reduce((result, order) => {
       const month = dayjs(order.date).format("YYYY-MM");
@@ -145,18 +122,8 @@ const Dashboard = () => {
     (order) => order.status === "Đã giao thành công"
   );
 
-  const dailySales = groupByDate(successfulOrders);
   const monthlySales = groupByMonth(successfulOrders);
   const yearlySales = groupByYear(successfulOrders);
-
-  const dailySalesData = (): SalesData[] => {
-    const allDates = createDateList(dayjs("2025-01-01"), dayjs());
-    return allDates.map((date) => ({
-      name: date,
-      total: dailySales[date]?.total || 0,
-      orderCount: dailySales[date]?.count || 0,
-    }));
-  };
 
   const monthlySalesData = (): SalesData[] => {
     const allMonths: string[] = [];
@@ -230,13 +197,12 @@ const Dashboard = () => {
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={24} md={8}>
           <Select
-            defaultValue="day"
+            defaultValue="month"
             style={{ width: "100%" }}
             onChange={(value) =>
-              setFilterType(value as "day" | "month" | "year")
+              setFilterType(value as "month" | "year")
             }
           >
-            <Option value="day">Theo Ngày</Option>
             <Option value="month">Theo Tháng</Option>
             <Option value="year">Theo Năm</Option>
           </Select>
@@ -270,21 +236,13 @@ const Dashboard = () => {
         <Col xs={24}>
           <Card
             title={`Doanh Thu ${
-              filterType === "day"
-                ? "Theo Ngày"
-                : filterType === "month"
-                ? "Theo Tháng"
-                : "Theo Năm"
+              filterType === "month" ? "Theo Tháng" : "Theo Năm"
             }`}
           >
             <ResponsiveContainer width="100%" height={400}>
               <LineChart
                 data={
-                  filterType === "day"
-                    ? dailySalesData()
-                    : filterType === "month"
-                    ? monthlySalesData()
-                    : yearlySalesData()
+                  filterType === "month" ? monthlySalesData() : yearlySalesData()
                 }
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
