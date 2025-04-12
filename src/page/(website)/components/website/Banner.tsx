@@ -51,7 +51,6 @@ const Banner = () => {
   };
 
   return (
-
     <div 
       className="relative mb-16 w-full"
       onMouseEnter={() => setShowControls(true)}
@@ -66,7 +65,6 @@ const Banner = () => {
           />
           <button 
             onClick={handlePrevClick}
-
             className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/75 p-2 rounded-full transition-opacity duration-300 ${
               showControls ? 'opacity-100' : 'opacity-0'
             }`}
@@ -77,7 +75,6 @@ const Banner = () => {
           </button>
           <button 
             onClick={handleNextClick}
-
             className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/75 p-2 rounded-full transition-opacity duration-300 ${
               showControls ? 'opacity-100' : 'opacity-0'
             }`}

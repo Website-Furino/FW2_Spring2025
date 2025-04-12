@@ -13,8 +13,8 @@ import {
 } from "antd";
 
 interface CartItem {
-  id: number|string;
-  userId: number|string;
+  id: number | string;
+  userId: number | string;
   productId: number;
   name: string;
   price: number;
@@ -92,13 +92,18 @@ const OrderHistory = () => {
     try {
       // Cập nhật tồn kho
       for (const item of order.cartItems) {
-        const productRes = await axios.get(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`);
+        const productRes = await axios.get(
+          `https://json-server-online-8kf1.onrender.com/products/${item.productId}`
+        );
         const productData = productRes.data;
         const updatedStock = productData.stock + item.quantity;
 
-        await axios.patch(`https://json-server-online-8kf1.onrender.com/products/${item.productId}`, {
-          stock: updatedStock,
-        });
+        await axios.patch(
+          `https://json-server-online-8kf1.onrender.com/products/${item.productId}`,
+          {
+            stock: updatedStock,
+          }
+        );
       }
 
       // Cập nhật đơn hàng
@@ -142,7 +147,9 @@ const OrderHistory = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-semibold text-center mb-8">Lịch sử đơn hàng</h1>
+      <h1 className="text-3xl font-semibold text-center mb-8">
+        Lịch sử đơn hàng
+      </h1>
 
       <List
         itemLayout="vertical"
@@ -153,27 +160,51 @@ const OrderHistory = () => {
             <Card
               title={`Đơn hàng #${order.id}`}
               className="mb-6"
-              extra={<span>Ngày đặt: {new Date(order.orderDate).toLocaleString()}</span>}
+              extra={
+                <span>
+                  Ngày đặt: {new Date(order.orderDate).toLocaleString()}
+                </span>
+              }
             >
               <div className="text-gray-700 mb-4">
-                <p><strong>Phương thức thanh toán:</strong> {order.paymentMethod}</p>
-                <p><strong>Tổng tiền:</strong> {order.totalPrice?.toLocaleString()} đ</p>
+                <p>
+                  <strong>Phương thức thanh toán:</strong> {order.paymentMethod}
+                </p>
+                <p>
+                  <strong>Tổng tiền:</strong>{" "}
+                  {order.totalPrice?.toLocaleString()} đ
+                </p>
                 <p>
                   <strong>Trạng thái:</strong>{" "}
-                  <Tag color={
-                    order.status === "Đã giao thành công" ? "green" :
-                    order.status === "Đã hủy" ? "red" :
-                    order.status === "Chờ xác nhận" ? "orange" : "blue"
-                  }>
+                  <Tag
+                    color={
+                      order.status === "Đã giao thành công"
+                        ? "green"
+                        : order.status === "Đã hủy"
+                        ? "red"
+                        : order.status === "Chờ xác nhận"
+                        ? "orange"
+                        : "blue"
+                    }
+                  >
                     {order.status}
                   </Tag>
                 </p>
-
+                <p>
+                  <strong>Địa chỉ:</strong> {order.userInfo.address}
+                </p>
                 {order.status === "Đã hủy" && (
                   <>
-                    <p><strong>Lý do hủy:</strong> {order.cancelReason}</p>
-                    <p><strong>Người hủy:</strong> {order.canceledBy}</p>
-                    <p><strong>Ngày hủy:</strong> {new Date(order.cancelDate!).toLocaleString()}</p>
+                    <p>
+                      <strong>Lý do hủy:</strong> {order.cancelReason}
+                    </p>
+                    <p>
+                      <strong>Người hủy:</strong> {order.canceledBy}
+                    </p>
+                    <p>
+                      <strong>Ngày hủy:</strong>{" "}
+                      {new Date(order.cancelDate!).toLocaleString()}
+                    </p>
                   </>
                 )}
               </div>
@@ -184,10 +215,17 @@ const OrderHistory = () => {
                   (product) =>
                     product.userId === user.id && (
                       <div key={product.id} className="flex space-x-4">
-                        <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded" />
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
                         <div>
                           <p className="font-semibold">{product.name}</p>
-                          <p>{product.quantity} x {product.price?.toLocaleString()} đ</p>
+                          <p>
+                            {product.quantity} x{" "}
+                            {product.price?.toLocaleString()} đ
+                          </p>
                         </div>
                       </div>
                     )

@@ -79,7 +79,9 @@ const ProductDetail = () => {
     }
 
     axios
-      .get(`https://json-server-online-8kf1.onrender.com/carts?userId=${user.id}&productId=${product.id}`)
+      .get(
+        `https://json-server-online-8kf1.onrender.com/carts?userId=${user.id}&productId=${product.id}`
+      )
       .then((res) => {
         const existingCartItem = res.data[0];
         const currentQty = existingCartItem ? existingCartItem.quantity : 0;
@@ -97,9 +99,13 @@ const ProductDetail = () => {
 
         if (existingCartItem) {
           axios
-            .patch(`https://json-server-online-8kf1.onrender.com/carts/${existingCartItem.id}`, {
-              quantity: totalQty,
-            })
+            .patch(
+              `https://json-server-online-8kf1.onrender.com/carts/${existingCartItem.id}`,
+              {
+                quantity: totalQty,
+                totalPrice: totalQty * product.price,
+              }
+            )
             .then(() => {
               notification.success({
                 message: "Cập nhật giỏ hàng thành công",
@@ -113,15 +119,21 @@ const ProductDetail = () => {
             name: product.name,
             price: product.price,
             quantity,
+            totalPrice: quantity * product.price,
             imageUrl: product.imageUrl,
           };
 
-          axios.post("https://json-server-online-8kf1.onrender.com/carts", cartItem).then(() => {
-            notification.success({
-              message: "Thêm vào giỏ hàng thành công",
-              description: `${product.name} đã được thêm vào giỏ hàng.`,
+          axios
+            .post(
+              "https://json-server-online-8kf1.onrender.com/carts",
+              cartItem
+            )
+            .then(() => {
+              notification.success({
+                message: "Thêm vào giỏ hàng thành công",
+                description: `${product.name} đã được thêm vào giỏ hàng.`,
+              });
             });
-          });
         }
       })
       .catch(() => {
